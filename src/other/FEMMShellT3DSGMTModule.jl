@@ -51,6 +51,7 @@ The following features are incorporated to deal with nodal normals:
 mutable struct FEMMShellT3DSGMT{S<:AbstractFESet, F<:Function, M} <: AbstractFEMM
     integdomain::IntegDomain{S, F} # integration domain data
     material::M # material object.
+    drilling_stiffness_scale::FFlt
     _associatedgeometry::Bool
     _normals::FFltMat
     _normal_valid::Vector{Bool}
@@ -108,7 +109,7 @@ function FEMMShellT3DSGMT(integdomain::IntegDomain{S, F}, material::M) where {S<
     _DpsBmb = similar(_Bm)
     _DtBs = similar(_Bs)
     
-    return FEMMShellT3DSGMT(integdomain, material,
+    return FEMMShellT3DSGMT(integdomain, material, 1.0,
         false,
         _normals, _normal_valid,
         _loc, _J, _J0,
@@ -188,18 +189,19 @@ function _nodal_triads_e!(n_e, nvalid, e_g, normals, normal_valid, c)
     return n_e, nvalid
 end
 
-function _transfmat_n_to_g!(Te, n_e, e_g)
-    # Nodal-to-global transformation matrix. 
-    # The 3x3 blocks consist of the nodal
-    # triad expressed on the global basis. The nodal basis vectors in `n_e
-    # [i]` are expressed on the element basis, and are then rotated with `e_g`
-    # into the global coordinate system.
+function _transfmat_g_to_n!(Te, n_e, e_g)
+    # Global-to-nodal transformation matrix. 
+    
+    # The 3x3 blocks consist of the nodal triad expressed on the global basis.
+    # The nodal basis vectors in `n_e[i]` are expressed on the element basis,
+    # and are then rotated with `e_g` into the global coordinate system.
+
     # Output
-    # - `Te` = transformation matrix, input in the nodal basis, output in the
-    #   global basis
+    # - `Te` = transformation matrix, input in the global basis, output in the
+    #   nodal basis
     Te .= 0.0
     for i in 1:__nn
-        Teblock = e_g * n_e[i] # TO DO remove temporary
+        Teblock = transpose(n_e[i]) * transpose(e_g) # TO DO remove temporary
         offset = (i-1)*__ndof
         r = offset+1:offset+3
         @. Te[r, r] = Teblock
@@ -209,7 +211,7 @@ function _transfmat_n_to_g!(Te, n_e, e_g)
     return Te
 end
 
-function _transfmat_e_to_n!(Te, n_e, gradN_e)
+function _transfmat_n_to_e!(Te, n_e, gradN_e)
 # Nodal-to-element transformation matrix. 
 # lTn = matrix with the nodal triad vectors in columns, components 
 # on the element basis
@@ -219,24 +221,23 @@ function _transfmat_e_to_n!(Te, n_e, gradN_e)
     for i in 1:__nn
         roffset = (i-1)*__ndof
         r = roffset+1:roffset+3
-        Te[r, r] .= n_e[i]' # this needs to be inverse
+        Te[r, r] .= n_e[i] # this needs to be inverse
     end
 # Rotation degrees of freedom. The drilling rotation of the mid surface
 # produced by the 1/2*(v,x - u,y) effect is linked to the out of plane
 # rotations.
     for i in 1:__nn
-        coffst = (i-1)*__ndof
-        invn_e = inv(n_e[i][1:2, 1:2]') 
-        Te[coffst.+(4:5), coffst.+(4:5)] .= invn_e
-        Te[coffst+6, coffst+6] = 1/n_e[i][3, 3]
-        r = invn_e * vec(n_e[i][1:2, 3]) # TO DO avoid the temporary
-        @show r
+        roffst = (i-1)*__ndof
+        invn_e = inv(n_e[i][1:2, 1:2]) 
+        Te[roffst.+(4:5), roffst.+(4:5)] .= invn_e
+        Te[roffst+6, roffst+6] = 1/n_e[i][3, 3]
+        a1, a2 = invn_e * vec(n_e[i][1:2, 3]) # TO DO avoid the temporary
         for j in 1:__nn
-            roffst = (j-1)*__ndof
-            Te[roffst+1, coffst+4] = (-r[1] * 1/2 * gradN_e[j, 2])
-            Te[roffst+2, coffst+4] = (+r[1] * 1/2 * gradN_e[j, 1])
-            Te[roffst+1, coffst+5] = (-r[2] * 1/2 * gradN_e[j, 2])
-            Te[roffst+2, coffst+5] = (+r[2] * 1/2 * gradN_e[j, 1])
+            coffst = (j-1)*__ndof
+            Te[roffst+4, coffst+1] = (-a1 * 1/2 * gradN_e[j, 2])
+            Te[roffst+4, coffst+2] = (+a1 * 1/2 * gradN_e[j, 1])
+            Te[roffst+5, coffst+1] = (-a2 * 1/2 * gradN_e[j, 2])
+            Te[roffst+5, coffst+2] = (+a2 * 1/2 * gradN_e[j, 1])
         end
     end
     return Te
@@ -425,7 +426,7 @@ function stiffness(self::FEMMShellT3DSGMT, assembler::ASS, geom0::NodalField{FFl
     Dps, Dt = _shell_material_stiffness(self.material)
     scf=5/6;  # shear correction factor
     Dt .*= scf
-    drilling_stiffness_scale = 1.0e-1
+    drilling_stiffness_scale = self.drilling_stiffness_scale
     startassembly!(assembler, size(elmat, 1), size(elmat, 2), count(fes), dchi.nfreedofs, dchi.nfreedofs);
     for i in 1:count(fes) # Loop over elements
         gathervalues_asmat!(geom0, ecoords, fes.conn[i]);
@@ -454,7 +455,7 @@ function stiffness(self::FEMMShellT3DSGMT, assembler::ASS, geom0::NodalField{FFl
         complete_lt!(elmat)
         # Now treat the transformation from the element to the nodal triad
         _nodal_triads_e!(n_e, nvalid, e_g, normals, normal_valid, fes.conn[i])
-        _transfmat_e_to_n!(Te, n_e, gradN_e)
+        _transfmat_n_to_e!(Te, n_e, gradN_e)
          # Transform the elementwise matrix into the nodal coordinates
         transformwith(elmat, Te)
         # Bending diagonal stiffness coefficients
@@ -467,7 +468,7 @@ function stiffness(self::FEMMShellT3DSGMT, assembler::ASS, geom0::NodalField{FFl
         nvalid[2] && (elmat[12,12] += kavg)
         nvalid[3] && (elmat[18,18] += kavg)
         # Transform from nodal into global coordinates
-        _transfmat_n_to_g!(Te, n_e, e_g)
+        _transfmat_g_to_n!(Te, n_e, e_g)
         transformwith(elmat, Te)
         # Assembly
         gatherdofnums!(dchi, dofnums, fes.conn[i]); 

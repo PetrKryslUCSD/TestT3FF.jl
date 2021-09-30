@@ -24,6 +24,7 @@ using FinEtoolsDeforLinear
 using FinEtoolsFlexStructures.FESetShellT3Module: FESetShellT3
 using FinEtoolsFlexStructures.FESetShellQ4Module: FESetShellQ4
 using FinEtoolsFlexStructures.FEMMShellT3FFModule
+using T3DSGA_Verification.FEMMShellT3DSGMTModule
 using FinEtoolsFlexStructures.RotUtilModule: initial_Rfield, linear_update_rotation_field!, update_rotation_field!
 using FinEtoolsFlexStructures.VisUtilModule: plot_nodes, plot_midline, render, plot_space_box, plot_midsurface, space_aspectratio, save_to_json
 
@@ -38,6 +39,7 @@ function _execute(input = "raasch_s4_1x9.inp", drilling_stiffness_scale = 1.0, v
     analyt_sol = 5.02;
     R = 46.0;
     formul = FEMMShellT3FFModule
+    formul = FEMMShellT3DSGMTModule
     @show formul
 
     output = import_ABAQUS(joinpath(dirname(@__FILE__()), input))
