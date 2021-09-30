@@ -12,3 +12,5 @@
 docs/build/
 .vscode/
 *.bak
+
+*.pdf
