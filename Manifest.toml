@@ -220,7 +220,7 @@ version = "1.2.1"
 
 [[deps.FinEtoolsFlexStructures]]
 deps = ["Arpack", "Dierckx", "FinEtools", "FinEtoolsDeforLinear", "Gnuplot", "Infiltrator", "JSON", "LinearAlgebra", "PlotlyBase", "PlotlyJS", "Revise", "SparseArrays", "Statistics", "SymRCM", "Test"]
-git-tree-sha1 = "1a80a11633e13ba3dede8a9d3a80c53ab2612bb8"
+git-tree-sha1 = "bdf760a6b90c06fd7d5050c63617cba8ca92bd64"
 repo-rev = "main"
 repo-url = "https://github.com/PetrKryslUCSD/FinEtoolsFlexStructures.jl.git"
 uuid = "723391e6-6814-4d1d-921c-018f691214d8"
