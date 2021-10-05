@@ -228,16 +228,29 @@ function _transfmat_n_to_e!(Te, n_e, gradN_e)
 # rotations.
     for i in 1:__nn
         roffst = (i-1)*__ndof
-        invn_e = inv(n_e[i][1:2, 1:2]) 
+        n_ei = n_e[i] # TO DO avoid temporary
+        invn_e = inv(n_ei[1:2, 1:2]) 
         Te[roffst.+(4:5), roffst.+(4:5)] .= invn_e
-        Te[roffst+6, roffst+6] = 1/n_e[i][3, 3]
-        a1, a2 = invn_e * vec(n_e[i][1:2, 3]) # TO DO avoid the temporary
+        Te[roffst+6, roffst+6] = 1/n_ei[3, 3]
+        a1, a2 = invn_e * vec(n_ei[1:2, 3]) # TO DO avoid the temporary
         for j in 1:__nn
             coffst = (j-1)*__ndof
-            Te[roffst+4, coffst+1] = (-a1 * 1/2 * gradN_e[j, 2])
-            Te[roffst+4, coffst+2] = (+a1 * 1/2 * gradN_e[j, 1])
-            Te[roffst+5, coffst+1] = (-a2 * 1/2 * gradN_e[j, 2])
-            Te[roffst+5, coffst+2] = (+a2 * 1/2 * gradN_e[j, 1])
+            # Te[roffst+4, coffst+1] = (-a1 * 1/2 * gradN_e[j, 2])
+            # Te[roffst+4, coffst+2] = (+a1 * 1/2 * gradN_e[j, 1])
+            # Te[roffst+5, coffst+1] = (-a2 * 1/2 * gradN_e[j, 2])
+            # Te[roffst+5, coffst+2] = (+a2 * 1/2 * gradN_e[j, 1])
+            Te[roffst+4, coffst+1] += (-a1 * 1/2) * (n_ei[1, 1] * gradN_e[j, 2])
+            Te[roffst+4, coffst+2] += (-a1 * 1/2) * (n_ei[1, 2] * gradN_e[j, 2])
+            Te[roffst+4, coffst+3] += (-a1 * 1/2) * (n_ei[1, 3] * gradN_e[j, 2])
+            Te[roffst+4, coffst+1] += (+a1 * 1/2) * (n_ei[2, 1] * gradN_e[j, 1])
+            Te[roffst+4, coffst+2] += (+a1 * 1/2) * (n_ei[2, 2] * gradN_e[j, 1])
+            Te[roffst+4, coffst+3] += (+a1 * 1/2) * (n_ei[2, 3] * gradN_e[j, 1])
+            Te[roffst+5, coffst+1] += (-a2 * 1/2) * (n_ei[1, 1] * gradN_e[j, 2])
+            Te[roffst+5, coffst+2] += (-a2 * 1/2) * (n_ei[1, 2] * gradN_e[j, 2])
+            Te[roffst+5, coffst+3] += (-a2 * 1/2) * (n_ei[1, 3] * gradN_e[j, 2])
+            Te[roffst+5, coffst+1] += (+a2 * 1/2) * (n_ei[2, 1] * gradN_e[j, 1])
+            Te[roffst+5, coffst+2] += (+a2 * 1/2) * (n_ei[2, 2] * gradN_e[j, 1])
+            Te[roffst+5, coffst+3] += (+a2 * 1/2) * (n_ei[2, 3] * gradN_e[j, 1])
         end
     end
     return Te
