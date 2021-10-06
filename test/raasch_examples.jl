@@ -39,7 +39,7 @@ function _execute(input = "raasch_s4_1x9.inp", drilling_stiffness_scale = 1.0, v
     analyt_sol = 5.02;
     R = 46.0;
     formul = FEMMShellT3FFModule
-    formul = FEMMShellT3DSGMTModule
+    # formul = FEMMShellT3DSGMTModule
     @show formul
 
     output = import_ABAQUS(joinpath(dirname(@__FILE__()), input))
