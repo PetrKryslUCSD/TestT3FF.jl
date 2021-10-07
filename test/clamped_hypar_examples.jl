@@ -140,6 +140,24 @@ function test_convergence()
     return ns, all_results
 end
 
+function test_0_001()
+    tL_ratio = 1/1000 
+    g = 80*0.1^1
+    analyt_sol = -6.3941e-3
+    
+    ns = [8, 16, 32, 48]
+    @info "Clamped hypar, t/L=$(tL_ratio)"
+    results = Float64[]
+    for n in ns
+        # for n in [4, 8, 16, 32, 64, ]
+        r = _execute(tL_ratio, g, analyt_sol, n, false)
+        push!(results, r/analyt_sol)
+    end   
+    
+
+    return ns, results
+end
+
 # using Gnuplot
 
 # ns = 1 ./ [4, 8, 16, 32, 64, 128, 256, ]
@@ -219,3 +237,54 @@ push!(objects, LegendEntry("t/L=1/10000"))
 
 display(ax)
 pgfsave("clamped_hypar_examples-dependence-on-t-L.pdf", ax)
+
+
+
+using PGFPlotsX
+
+objects = []
+
+
+Allman = [0.07, 0.307, 0.829, 0.954]
+Providas_Kattis = [1.07, 1.00, 0.985, 0.985]
+Cook_flat_stiffened = [0.563, 0.939, 0.984, 0.991]
+ns, results = clamped_hypar_examples.test_0_001()
+
+all_results = [("Present", results, "*"), ("Allman", Allman, "x"), ("Providas, Kattis", Providas_Kattis, "triangle"), ("Cook, flat, stiffened", Cook_flat_stiffened, "square")]
+
+for r in  all_results
+    @pgf p = PGFPlotsX.Plot(
+    {
+    color = "black",
+    line_width  = 0.7, 
+    style = "solid",
+    mark = "$(r[3])"
+    },
+    Coordinates([v for v in  zip(ns, r[2])])
+    )
+    push!(objects, p)
+    push!(objects, LegendEntry("$(r[1])"))
+end
+
+
+@pgf ax = Axis(
+    {
+        xlabel = "Number of Elements / side [ND]",
+        ylabel = "Normalized Displacement [ND]",
+        # xmin = range[1],
+        # xmax = range[2],
+        xmode = "linear", 
+        ymode = "linear",
+        yminorgrids = "true",
+        grid = "both",
+        legend_style = {
+            at = Coordinate(0.5, 1.05),
+            anchor = "south",
+            legend_columns = -1
+        },
+    },
+    objects...
+)
+
+display(ax)
+pgfsave("clamped_hypar_examples-0_001.pdf", ax)
