@@ -78,16 +78,19 @@ function _execute(n = 2, visualize = true)
     K = stiffness(femm, geom0, u0, Rfield0, dchi);
 
     # Load
+    nlc = selectnode(fens; box = Float64[0 0 L/2 L/2 -Inf Inf], inflate = tolerance)
+    # If desired, increase the tolerance, for instance to half of the thickness.
     nl = selectnode(fens; box = Float64[0 0 L/2 L/2 -Inf Inf], inflate = tolerance)
-    loadbdry = FESetP1(reshape(nl, 1, 1))
+    nln = length(nl)
+    loadbdry = FESetP1(reshape(nl, nln, 1))
     lfemm = FEMMBase(IntegDomain(loadbdry, PointRule()))
-    fi = ForceIntensity(FFlt[0, 0, -1/4, 0, 0, 0]);
+    fi = ForceIntensity(FFlt[0, 0, -1/4/nln, 0, 0, 0]);
     F = distribloads(lfemm, geom0, dchi, fi, 3);
 
     # Solve
     U = K\F
     scattersysvec!(dchi, U[:])
-    @show n,  dchi.values[nl, 3]/analyt_sol*100
+    @show n,  dchi.values[nlc, 3][1]/analyt_sol*100
 
     # Visualization
     if visualize
@@ -99,12 +102,12 @@ function _execute(n = 2, visualize = true)
             dims = 1)
         pl = render(plots)
     end
-    return dchi.values[nl, 3][1]/analyt_sol*100
+    return dchi.values[nlc, 3][1]/analyt_sol*100
 end
 
 function test_convergence()
     @info "Pinched cylinder"
-    ns = [4, 8, 16, 24, 32] 
+    ns = [4, 8, 16, 24, 32, 64, 128, 256, 512] 
     results = Float64[]
     for n in ns 
         v = _execute(n, false)
