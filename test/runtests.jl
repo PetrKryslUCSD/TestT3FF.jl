@@ -2,6 +2,7 @@
 
 
 for s in [
+    "scordelis_lo_examples",
     "barrel_vault_examples",
     "clamped_hypar_examples", 
     "pinched_cylinder_examples",

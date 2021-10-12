@@ -107,7 +107,7 @@ end
 
 function test_convergence()
     @info "Pinched cylinder"
-    ns = [4, 8, 16, 24, 32, 64, 128, 256, 512] 
+    ns = [4, 8, 16, 24, 32] 
     results = Float64[]
     for n in ns 
         v = _execute(n, false)
@@ -144,6 +144,10 @@ ns, results = pinched_cylinder_examples.test_convergence()
 # [ Info: Mesh: 600 elements per side                                        
 # (n, (dchi.values[nl, 3] / analyt_sol) * 100) = (600, [101.73923429243655]) 
 
+# These results come from Shin, Lee (2014), Table 3.
+
+# Mesh Subdivision
+# 4, 8, 16, 24, 32
 Allman = [
 59.02
 92.41
@@ -165,24 +169,6 @@ Providas_Kattis = [
 99.52
 99.74
 ] .* (1.8541/1.82488)
-# ANDES (OPT)
-# 63.04
-# 93.74
-# 100.64
-# 100.57
-# 100.29
-# Present (†fixed β0)
-# 47.69
-# 86.92
-# 98.68
-# 99.72
-# 99.81
-# Present
-# 57.09
-# 92.24
-# 101.17
-# 101.02
-# 100.60
 
 using PGFPlotsX
 
