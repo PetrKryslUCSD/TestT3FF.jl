@@ -235,22 +235,22 @@ function _transfmat_n_to_e!(Te, n_e, gradN_e)
         a1, a2 = invn_e * vec(n_ei[1:2, 3]) # TO DO avoid the temporary
         for j in 1:__nn
             coffst = (j-1)*__ndof
-            # Te[roffst+4, coffst+1] = (-a1 * 1/2 * gradN_e[j, 2])
-            # Te[roffst+4, coffst+2] = (+a1 * 1/2 * gradN_e[j, 1])
-            # Te[roffst+5, coffst+1] = (-a2 * 1/2 * gradN_e[j, 2])
-            # Te[roffst+5, coffst+2] = (+a2 * 1/2 * gradN_e[j, 1])
-            Te[roffst+4, coffst+1] += (-a1 * 1/2) * (n_ei[1, 1] * gradN_e[j, 2])
-            Te[roffst+4, coffst+2] += (-a1 * 1/2) * (n_ei[1, 2] * gradN_e[j, 2])
-            Te[roffst+4, coffst+3] += (-a1 * 1/2) * (n_ei[1, 3] * gradN_e[j, 2])
-            Te[roffst+4, coffst+1] += (+a1 * 1/2) * (n_ei[2, 1] * gradN_e[j, 1])
-            Te[roffst+4, coffst+2] += (+a1 * 1/2) * (n_ei[2, 2] * gradN_e[j, 1])
-            Te[roffst+4, coffst+3] += (+a1 * 1/2) * (n_ei[2, 3] * gradN_e[j, 1])
-            Te[roffst+5, coffst+1] += (-a2 * 1/2) * (n_ei[1, 1] * gradN_e[j, 2])
-            Te[roffst+5, coffst+2] += (-a2 * 1/2) * (n_ei[1, 2] * gradN_e[j, 2])
-            Te[roffst+5, coffst+3] += (-a2 * 1/2) * (n_ei[1, 3] * gradN_e[j, 2])
-            Te[roffst+5, coffst+1] += (+a2 * 1/2) * (n_ei[2, 1] * gradN_e[j, 1])
-            Te[roffst+5, coffst+2] += (+a2 * 1/2) * (n_ei[2, 2] * gradN_e[j, 1])
-            Te[roffst+5, coffst+3] += (+a2 * 1/2) * (n_ei[2, 3] * gradN_e[j, 1])
+            Te[roffst+4, coffst+1] = (-a1 * 1/2 * gradN_e[j, 2])
+            Te[roffst+4, coffst+2] = (+a1 * 1/2 * gradN_e[j, 1])
+            Te[roffst+5, coffst+1] = (-a2 * 1/2 * gradN_e[j, 2])
+            Te[roffst+5, coffst+2] = (+a2 * 1/2 * gradN_e[j, 1])
+            # Te[roffst+4, coffst+1] += (-a1 * 1/2) * (n_ei[1, 1] * gradN_e[j, 2])
+            # Te[roffst+4, coffst+2] += (-a1 * 1/2) * (n_ei[1, 2] * gradN_e[j, 2])
+            # Te[roffst+4, coffst+3] += (-a1 * 1/2) * (n_ei[1, 3] * gradN_e[j, 2])
+            # Te[roffst+4, coffst+1] += (+a1 * 1/2) * (n_ei[2, 1] * gradN_e[j, 1])
+            # Te[roffst+4, coffst+2] += (+a1 * 1/2) * (n_ei[2, 2] * gradN_e[j, 1])
+            # Te[roffst+4, coffst+3] += (+a1 * 1/2) * (n_ei[2, 3] * gradN_e[j, 1])
+            # Te[roffst+5, coffst+1] += (-a2 * 1/2) * (n_ei[1, 1] * gradN_e[j, 2])
+            # Te[roffst+5, coffst+2] += (-a2 * 1/2) * (n_ei[1, 2] * gradN_e[j, 2])
+            # Te[roffst+5, coffst+3] += (-a2 * 1/2) * (n_ei[1, 3] * gradN_e[j, 2])
+            # Te[roffst+5, coffst+1] += (+a2 * 1/2) * (n_ei[2, 1] * gradN_e[j, 1])
+            # Te[roffst+5, coffst+2] += (+a2 * 1/2) * (n_ei[2, 2] * gradN_e[j, 1])
+            # Te[roffst+5, coffst+3] += (+a2 * 1/2) * (n_ei[2, 3] * gradN_e[j, 1])
         end
     end
     return Te
@@ -462,6 +462,7 @@ function stiffness(self::FEMMShellT3DSGMT, assembler::ASS, geom0::NodalField{FFl
             # (at least for the pinched cylinder). What is the recommended
             # multiplier of he^2?
             he = sqrt(Jac)
+            # add_btdb_ut_only!(elmat, Bs, (t)*Jac*w[j], Dt, DtBs)
             add_btdb_ut_only!(elmat, Bs, (t^3/(t^2+0.2*he^2))*Jac*w[j], Dt, DtBs)
         end
         # Complete the elementwise matrix by filling in the lower triangle
