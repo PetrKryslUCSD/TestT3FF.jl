@@ -211,3 +211,44 @@ end
 display(ax)
 pgfsave("scordelis_lo_examples-convergence.pdf", ax)
 
+ns, results = scordelis_lo_examples.test_convergence([4, 8, 16])
+q1, q2, q3 = results
+@show qtrue = (q2^2 - q1 * q3) / (2*q2 - q1 - q3)
+
+ns, results = scordelis_lo_examples.test_convergence(2 .* [4, 8, 16])
+q1, q2, q3 = results
+@show qtrue = (q2^2 - q1 * q3) / (2*q2 - q1 - q3)
+
+ns, results = scordelis_lo_examples.test_convergence(4 .* [4, 8, 16])
+q1, q2, q3 = results
+@show qtrue = (q2^2 - q1 * q3) / (2*q2 - q1 - q3)
+
+ns, results = scordelis_lo_examples.test_convergence(8 .* [4, 8, 16])
+q1, q2, q3 = results
+@show qtrue = (q2^2 - q1 * q3) / (2*q2 - q1 - q3)
+
+ns, results = scordelis_lo_examples.test_convergence(16 .* [4, 8, 16])
+q1, q2, q3 = results
+@show qtrue = (q2^2 - q1 * q3) / (2*q2 - q1 - q3)
+
+ns, results = scordelis_lo_examples.test_convergence(32 .* [4, 8, 16])
+q1, q2, q3 = results
+@show qtrue = (q2^2 - q1 * q3) / (2*q2 - q1 - q3)
+
+ns, results = scordelis_lo_examples.test_convergence(64 .* [4, 8, 16])
+q1, q2, q3 = results
+@show qtrue = (q2^2 - q1 * q3) / (2*q2 - q1 - q3)
+
+# julia> q1, q2, q3 = results                                                             
+# 3-element Vector{Any}:                                                                  
+#  99.65925843568742                                                                      
+#  99.6820694134264                                                                       
+#  99.68801945695984                                                                      
+                                                                                        
+# julia> @show qtrue = (q2^2 - q1 * q3) / (2*q2 - q1 - q3)                                
+# qtrue = (q2 ^ 2 - q1 * q3) / ((2q2 - q1) - q3) = 99.69011916380857                      
+# 99.69011916380857    
+
+# using FinEtools.AlgoBaseModule 
+# AlgoBaseModule.richextrapol(Float64.(results) , 1 ./ ns)                         
+# (99.69011916375054, 1.9387561566847429, 1440.1118605939823, [3.750472155061857e-14, 3.239596091386687e-14, -1.0034074265918846e-14])  
