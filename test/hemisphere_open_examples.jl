@@ -25,6 +25,9 @@ Yeongbin Ko a, Youngyu Lee b, Phill-Seung Lee a,⇑, Klaus-Jürgen Bathe
 
 The drilling degrees of freedom stiffness has an effect on the convergence for
 coarser meshes.
+
+Abaqus KL eight-node curved element gives this sequence (element size changed
+with a factor of two): 9.345, 9.353, 9.357. Extrapolated value 9.3597. (/100)
 """
 module hemisphere_open_examples
 
