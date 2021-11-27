@@ -2,8 +2,14 @@
 	"folders":
 	[
 		{
-			"path": "."
-		}
+			"path": ".",
+		},
+		{
+			"path": "C:\\Users\\pkonl\\Documents\\00WIP\\FinEtoolsDeforLinear.jl",
+		},
+		{
+			"path": "C:\\Users\\pkonl\\Documents\\00WIP\\FinEtools.jl"
+		},
 	],
     "settings": {
          "color_scheme": "Packages/Behave Color Scheme/Behave.tmTheme",
