@@ -24,6 +24,7 @@ using FinEtoolsDeforLinear
 using FinEtoolsFlexStructures.FESetShellT3Module: FESetShellT3
 using FinEtoolsFlexStructures.FESetShellQ4Module: FESetShellQ4
 using FinEtoolsFlexStructures.FEMMShellT3FFModule
+using FinEtoolsFlexStructures.FEMMShellT3FFModule: num_normals
 using T3FF_Verification.FEMMShellT3DSGMTModule
 using FinEtoolsFlexStructures.RotUtilModule: initial_Rfield, linear_update_rotation_field!, update_rotation_field!
 using FinEtoolsFlexStructures.VisUtilModule: plot_nodes, plot_midline, render, plot_space_box, plot_midsurface, space_aspectratio, save_to_json
@@ -36,7 +37,8 @@ function _execute(input = "raasch_s4_1x9.inp", drilling_stiffness_scale = 1.0, v
     thickness  =  2.0;
     tolerance = thickness/2
     # analytical solution for the vertical deflection under the load
-    analyt_sol = 5.02;
+    bench_sol = 5.022012648671993; # 20-node hex results
+    # bench_sol = 4.82482; # Ko et al, Performance ...
     R = 46.0;
     formul = FEMMShellT3FFModule
     # formul = FEMMShellT3DSGMTModule
@@ -111,6 +113,7 @@ function _execute(input = "raasch_s4_1x9.inp", drilling_stiffness_scale = 1.0, v
 
     # Assemble the system matrix
     associategeometry!(femm, geom0)
+    @show num_normals(femm)
     K = stiffness(femm, geom0, u0, Rfield0, dchi);
 
     # Load
@@ -127,7 +130,7 @@ function _execute(input = "raasch_s4_1x9.inp", drilling_stiffness_scale = 1.0, v
     scattersysvec!(dchi, U[:])
     nl = selectnode(fens; box = Float64[97.96152422706632 97.96152422706632 -16 -16 0 20], inflate = 1.0e-6)
     targetu =  mean(dchi.values[nl, 3])
-    @info "Solution: $(round(targetu, digits=8)),  $(round(targetu/analyt_sol, digits = 4)*100)%"
+    @info "Solution: $(round(targetu, digits=8)),  $(round(targetu/bench_sol, digits = 4)*100)%"
 
     # Visualization
     if visualize
@@ -139,7 +142,7 @@ function _execute(input = "raasch_s4_1x9.inp", drilling_stiffness_scale = 1.0, v
             dims = 1)
         pl = render(plots)
     end
-    return targetu/analyt_sol
+    return targetu/bench_sol
 end
 
 function test_convergence()
@@ -148,7 +151,7 @@ function test_convergence()
 
     # for m in ["1x9", "3x18", "5x36", "10x72", "20x144"]
         # _execute("raasch_s4_" * m * ".inp", 1.0, false)
-    for n in 1:9
+    for n in 1:7
         _execute("", 1.0, false, 9*2^(n-1), 1*2^(n-1))
     end
     return true
@@ -164,7 +167,7 @@ function test_dep_drilling_stiffness_scale()
         results = Float64[]
         # for m in ["1x9", "3x18", "5x36", "10x72", "20x144"]
             # v = _execute("raasch_s4_" * m * ".inp", drilling_stiffness_scale, false)
-        for n in 1:7
+        for n in 3:7
             v = _execute("", drilling_stiffness_scale, false, 9*2^(n-1), 1*2^(n-1))
                     push!(results, v)
         end
@@ -206,8 +209,8 @@ end
     {
         xlabel = "Number of Elements [ND]",
         ylabel = "Normalized Displacement [ND]",
-        # xmin = range[1],
-        # xmax = range[2],
+        ymin = 0.95,
+        ymax = 1.0,
         xmode = "log", 
         ymode = "linear",
         yminorgrids = "true",
