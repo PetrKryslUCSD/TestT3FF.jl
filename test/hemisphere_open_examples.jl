@@ -43,7 +43,17 @@ using FinEtools.MeshExportModule.VTKWrite: vtkwrite
 
 using Infiltrator
 
-function _execute(n = 8, visualize = true)
+function spherical!(csmatout::FFltMat, XYZ::FFltMat, tangents::FFltMat, fe_label::FInt)  
+    r = vec(XYZ); 
+    csmatout[:, 3] .= vec(r)/norm(vec(r))
+    csmatout[:, 2] .= (0.0, 0.0, 1.0)
+    cross3!(view(csmatout, :, 1), view(csmatout, :, 2), view(csmatout, :, 3))
+    csmatout[:, 1] .= vec(view(csmatout, :, 1))/norm(vec(view(csmatout, :, 1)))
+    cross3!(view(csmatout, :, 2), view(csmatout, :, 3), view(csmatout, :, 1))
+    return csmatout
+end
+
+function _execute(n = 8, visualize = true, exact_normals = false, drilling_stiffness_multiplier = 1.0)
     E = 6.825e7;
     nu = 0.3;
     thickness  =  0.04;
@@ -63,6 +73,8 @@ function _execute(n = 8, visualize = true)
     
     vtkwrite("geom.vtu", fens, fes)
 
+    ocsys = CSys(3, 3, spherical!)
+
     mater = MatDeforElastIso(DeforModelRed3D, E, nu)
     
     # Report
@@ -70,8 +82,12 @@ function _execute(n = 8, visualize = true)
 
     sfes = FESetShellT3()
     accepttodelegate(fes, sfes)
-    femm = formul.make(IntegDomain(fes, TriRule(1), thickness), mater)
-    femm.drilling_stiffness_scale = 0.1
+    if exact_normals
+        femm = formul.make(IntegDomain(fes, TriRule(1), thickness), ocsys, mater)
+    else
+        femm = formul.make(IntegDomain(fes, TriRule(1), thickness), mater)
+    end
+    femm.drilling_stiffness_scale = 0.1 * drilling_stiffness_multiplier
     stiffness = formul.stiffness
     associategeometry! = formul.associategeometry!
 
@@ -124,40 +140,35 @@ function _execute(n = 8, visualize = true)
     resultpercent =  dchi.values[nl, 1][1]*100
     @info "Solution: $(round(resultpercent/analyt_sol, digits = 4))%"
 
-    # # Generate a graphical display of resultants
-    # spherical!(csmatout::FFltMat, XYZ::FFltMat, tangents::FFltMat, fe_label::FInt) = begin
-    #     r = vec(XYZ); 
-    #     csmatout[:, 3] .= vec(r)/norm(vec(r))
-    #     csmatout[:, 2] .= (0.0, 0.0, 1.0)
-    #     cross3!(view(csmatout, :, 1), view(csmatout, :, 2), view(csmatout, :, 3))
-    #     cross3!(view(csmatout, :, 2), view(csmatout, :, 3), view(csmatout, :, 1))
-    #     return csmatout
-    # end
-    # ocsys = CSys(3, 3, spherical!)
-    # scalars = []
-    # for nc in 1:3
-    #     fld = fieldfromintegpoints(femm, geom0, dchi, :moment, nc, outputcsys = ocsys)
-    #         # fld = elemfieldfromintegpoints(femm, geom0, dchi, :moment, nc)
-    #     push!(scalars, ("m$nc", fld.values))
-    # end
-    # vtkwrite("hemisphere_open-$n-m.vtu", fens, fes; scalars = scalars, vectors = [("u", dchi.values[:, 1:3])])
-    # scalars = []
-    # for nc in 1:3
-    #     fld = fieldfromintegpoints(femm, geom0, dchi, :membrane, nc, outputcsys = ocsys)
-    #         # fld = elemfieldfromintegpoints(femm, geom0, dchi, :moment, nc)
-    #     push!(scalars, ("n$nc", fld.values))
-    # end
-    # vtkwrite("hemisphere_open-$n-n.vtu", fens, fes; scalars = scalars, vectors = [("u", dchi.values[:, 1:3])])
-    # scalars = []
-    # for nc in 1:2
-    #     fld = fieldfromintegpoints(femm, geom0, dchi, :shear, nc, outputcsys = ocsys)
-    #         # fld = elemfieldfromintegpoints(femm, geom0, dchi, :moment, nc)
-    #     push!(scalars, ("q$nc", fld.values))
-    # end
-    # vtkwrite("hemisphere_open-$n-q.vtu", fens, fes; scalars = scalars, vectors = [("u", dchi.values[:, 1:3])])
-
+    # Generate a graphical display of resultants
+    
     # Visualization
     if visualize
+
+        scalars = []
+        for nc in 1:3
+            fld = fieldfromintegpoints(femm, geom0, dchi, :moment, nc, outputcsys = ocsys)
+            # fld = elemfieldfromintegpoints(femm, geom0, dchi, :moment, nc)
+            push!(scalars, ("m$nc", fld.values))
+        end
+        vtkwrite("hemisphere_open-$n-m.vtu", fens, fes; scalars = scalars, vectors = [("u", dchi.values[:, 1:3])])
+        scalars = []
+        for nc in 1:3
+            fld = fieldfromintegpoints(femm, geom0, dchi, :membrane, nc, outputcsys = ocsys)
+            # fld = elemfieldfromintegpoints(femm, geom0, dchi, :moment, nc)
+            push!(scalars, ("n$nc", fld.values))
+        end
+        vtkwrite("hemisphere_open-$n-n.vtu", fens, fes; scalars = scalars, vectors = [("u", dchi.values[:, 1:3])])
+        scalars = []
+        for nc in 1:2
+            fld = fieldfromintegpoints(femm, geom0, dchi, :shear, nc, outputcsys = ocsys)
+            # fld = elemfieldfromintegpoints(femm, geom0, dchi, :moment, nc)
+            push!(scalars, ("q$nc", fld.values))
+        end
+        vtkwrite("hemisphere_open-$n-q.vtu", fens, fes; scalars = scalars, vectors = [("u", dchi.values[:, 1:3])])
+
+        vtkwrite("hemisphere_open-$n-normals.vtu", fens, fes; vectors = [("normals", femm._normals[:, 1:3])])
+
         scattersysvec!(dchi, (R/4)/maximum(abs.(U)).*U)
         update_rotation_field!(Rfield0, dchi)
         plots = cat(plot_space_box([[0 0 -R]; [R R R]]),
@@ -175,7 +186,19 @@ function test_convergence(ns = [4, 8, 16,] )
     
     results = Float64[]
     for n in ns 
-        v = _execute(n, false)
+        v = _execute(n, true)
+        push!(results, v)
+    end
+    return ns, results
+end
+
+function test_convergence_normals(ns = [4, 8, 16,], exact_normals = false, drilling_stiffness_multiplier =  1.0)
+    @info "Hemisphere with opening"
+    
+    
+    results = Float64[]
+    for n in ns 
+        v = _execute(n, false, exact_normals, drilling_stiffness_multiplier)
         push!(results, v)
     end
     return ns, results
@@ -248,3 +271,133 @@ end
 display(ax)
 pgfsave("hemisphere_open-convergence.pdf", ax)
 
+test_convergence_normals = hemisphere_open_examples.test_convergence_normals
+ns = [4, 8, 16, 32, 64, 128]
+
+objects = []
+
+
+@show ns, results = test_convergence_normals(ns, false, 0.1)
+@pgf p = PGFPlotsX.Plot(
+{
+color = "black",
+line_width  = 0.7, 
+style = "solid",
+mark = "x"
+},
+Coordinates([v for v in  zip(ns, results)])
+)
+push!(objects, p)
+push!(objects, LegendEntry("0.1"))
+
+@show ns, results = test_convergence_normals(ns, false, 1.0)
+@pgf p = PGFPlotsX.Plot(
+{
+color = "black",
+line_width  = 0.7, 
+style = "solid",
+mark = "o"
+},
+Coordinates([v for v in  zip(ns, results)])
+)
+push!(objects, p)
+push!(objects, LegendEntry("1.0"))
+
+@show ns, results = test_convergence_normals(ns, false, 100.0)
+@pgf p = PGFPlotsX.Plot(
+{
+color = "black",
+line_width  = 0.7, 
+style = "solid",
+mark = "diamond"
+},
+Coordinates([v for v in  zip(ns, results)])
+)
+push!(objects, p)
+push!(objects, LegendEntry("100.0"))
+
+
+@pgf ax = Axis(
+    {
+        xlabel = "Number of Elements / side [ND]",
+        ylabel = "Normalized Displacement [ND]",
+        # xmin = range[1],
+        # xmax = range[2],
+        xmode = "linear", 
+        ymode = "linear",
+        yminorgrids = "true",
+        grid = "both",
+        legend_style = {
+            at = Coordinate(0.5, 1.05),
+            anchor = "south",
+            legend_columns = -1
+        },
+    },
+    objects...
+)
+
+display(ax)
+pgfsave("hemisphere_open-normals-approximate-convergence.pdf", ax)
+
+objects = []
+
+@show ns, results = test_convergence_normals(ns, true, 0.1)
+@pgf p = PGFPlotsX.Plot(
+{
+color = "black",
+line_width  = 0.7, 
+style = "solid",
+mark = "x"
+},
+Coordinates([v for v in  zip(ns, results)])
+)
+push!(objects, p)
+push!(objects, LegendEntry("0.1"))
+
+@show ns, results = test_convergence_normals(ns, true, 1.0)
+@pgf p = PGFPlotsX.Plot(
+{
+color = "black",
+line_width  = 0.7, 
+style = "solid",
+mark = "o"
+},
+Coordinates([v for v in  zip(ns, results)])
+)
+push!(objects, p)
+push!(objects, LegendEntry("1.0"))
+
+@show ns, results = test_convergence_normals(ns, true, 100.0)
+@pgf p = PGFPlotsX.Plot(
+{
+color = "black",
+line_width  = 0.7, 
+style = "solid",
+mark = "diamond"
+},
+Coordinates([v for v in  zip(ns, results)])
+)
+push!(objects, p)
+push!(objects, LegendEntry("100.0"))
+
+@pgf ax = Axis(
+    {
+        xlabel = "Number of Elements / side [ND]",
+        ylabel = "Normalized Displacement [ND]",
+        # xmin = range[1],
+        # xmax = range[2],
+        xmode = "linear", 
+        ymode = "linear",
+        yminorgrids = "true",
+        grid = "both",
+        legend_style = {
+            at = Coordinate(0.5, 1.05),
+            anchor = "south",
+            legend_columns = -1
+        },
+    },
+    objects...
+)
+
+display(ax)
+pgfsave("hemisphere_open-normals-exact-convergence.pdf", ax)
