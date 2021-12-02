@@ -1,6 +1,6 @@
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.7.0-rc3"
+julia_version = "1.7.0"
 manifest_format = "2.0"
 
 [[deps.Adapt]]
@@ -31,9 +31,9 @@ version = "3.8.0+0"
 
 [[deps.ArrayInterface]]
 deps = ["Compat", "IfElse", "LinearAlgebra", "Requires", "SparseArrays", "Static"]
-git-tree-sha1 = "e527b258413e0c6d4f66ade574744c94edef81f8"
+git-tree-sha1 = "265b06e2b1f6a216e0e8f183d28e4d354eab3220"
 uuid = "4fba245c-0d91-5ea0-9b3e-6abc04ee57a9"
-version = "3.1.40"
+version = "3.2.1"
 
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
@@ -250,7 +250,7 @@ version = "1.2.1"
 
 [[deps.FinEtoolsFlexStructures]]
 deps = ["Arpack", "Dierckx", "FinEtools", "FinEtoolsDeforLinear", "Gnuplot", "Infiltrator", "JSON", "LinearAlgebra", "PlotlyBase", "PlotlyJS", "Revise", "SparseArrays", "Statistics", "SymRCM", "Test"]
-git-tree-sha1 = "aec34431a55da6e5d054590bfd8f6204c21177f6"
+git-tree-sha1 = "1453c66520c31564ea262988ea31f32567d6ace0"
 repo-rev = "main"
 repo-url = "https://github.com/PetrKryslUCSD/FinEtoolsFlexStructures.jl.git"
 uuid = "723391e6-6814-4d1d-921c-018f691214d8"
@@ -452,9 +452,9 @@ uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 
 [[deps.LoopVectorization]]
 deps = ["ArrayInterface", "CPUSummary", "CloseOpenIntervals", "DocStringExtensions", "HostCPUFeatures", "IfElse", "LayoutPointers", "LinearAlgebra", "OffsetArrays", "PolyesterWeave", "Requires", "SIMDDualNumbers", "SLEEFPirates", "Static", "ThreadingUtilities", "UnPack", "VectorizationBase"]
-git-tree-sha1 = "9d8ce46c7727debdfd65be244f22257abf7d8739"
+git-tree-sha1 = "9e10579c154f785b911d9ceb96c33fcc1a661171"
 uuid = "bdcacae8-1622-11e9-2a5c-532679323890"
-version = "0.12.98"
+version = "0.12.99"
 
 [[deps.LoweredCodeUtils]]
 deps = ["JuliaInterpreter"]
@@ -794,9 +794,9 @@ uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
 
 [[deps.VectorizationBase]]
 deps = ["ArrayInterface", "CPUSummary", "HostCPUFeatures", "Hwloc", "IfElse", "LayoutPointers", "Libdl", "LinearAlgebra", "SIMDTypes", "Static"]
-git-tree-sha1 = "5239606cf3552aff43d79ecc75b1af1ce4625109"
+git-tree-sha1 = "17e5847bb36730d90801170ecd0ce4041a3dde86"
 uuid = "3d5dd08c-fd9d-11e8-17fa-ed2836048c2f"
-version = "0.21.21"
+version = "0.21.22"
 
 [[deps.WebIO]]
 deps = ["AssetRegistry", "Base64", "Distributed", "FunctionalCollections", "JSON", "Logging", "Observables", "Pkg", "Random", "Requires", "Sockets", "UUIDs", "WebSockets", "Widgets"]
