@@ -8,11 +8,32 @@ using FinEtools.IntegDomainModule: IntegDomain, integrationdata, Jacobianvolume
 import FinEtools.FEMMBaseModule: associategeometry!
 using FinEtoolsDeforLinear.MatDeforLinearElasticModule: tangentmoduli!, update!, thermalstrain!
 using FinEtools.MatrixUtilityModule: add_btdb_ut_only!, complete_lt!, locjac!, add_nnt_ut_only!, add_btsigma!
-using FinEtoolsFlexStructures.FESetShellT3Module: FESetShellT3, local_frame!
+using FinEtoolsFlexStructures.FESetShellT3Module: FESetShellT3
 using FinEtoolsFlexStructures.TransformerModule: Transformer
 
 const __nn = 3 # number of nodes
 const __ndof = 6 # number of degrees of freedom per node
+
+function local_frame!(F0, J0)
+    # This is the tangent to the coordinate curve 1
+    a = @view J0[:, 1]
+    L0 = norm(a);
+    F0[:,1] = a/L0;
+    # This is the tangent to the coordinate curve 2
+    b = J0[:, 2]
+    #     F0(:,3)=skewmat(F0(:,1))*b;
+    b = @view J0[:, 2]
+    # Now compute the normal
+    F0[:, 3] .= (-F0[3,1]*b[2]+F0[2,1]*b[3],
+                  F0[3,1]*b[1]-F0[1,1]*b[3],
+                 -F0[2,1]*b[1]+F0[1,1]*b[2]);
+    F0[:, 3] /= norm(@view F0[:, 3]);
+    #     F0(:,2)=skewmat(F0(:,3))*F0(:,1);
+    F0[:, 2] .= (-F0[3,3]*F0[2,1]+F0[2,3]*F0[3,1],
+                  F0[3,3]*F0[1,1]-F0[1,3]*F0[3,1],
+                 -F0[2,3]*F0[1,1]+F0[1,3]*F0[2,1]);
+    return F0
+end
 
 """
     FEMMShellT3DSGMTMT{S<:AbstractFESet, F<:Function} <: AbstractFEMM
@@ -370,7 +391,7 @@ function associategeometry!(self::FEMMShellT3DSGMT,  geom::NodalField{FFlt})
         i, j, k = self.integdomain.fes.conn[el]
         J0[:, 1] = geom.values[j, :] - geom.values[i, :]
         J0[:, 2] = geom.values[k, :] - geom.values[i, :]
-        local_frame!(delegateof(self.integdomain.fes), e_g, J0)
+        local_frame!(e_g, J0)
         normals[i, :] .+= e_g[:, 3]
         normals[j, :] .+= e_g[:, 3]
         normals[k, :] .+= e_g[:, 3]
@@ -391,7 +412,7 @@ function associategeometry!(self::FEMMShellT3DSGMT,  geom::NodalField{FFlt})
         i, j, k = self.integdomain.fes.conn[el]
         J0[:, 1] = geom.values[j, :] - geom.values[i, :]
         J0[:, 2] = geom.values[k, :] - geom.values[i, :]
-        local_frame!(delegateof(self.integdomain.fes), e_g, J0)
+        local_frame!(e_g, J0)
         en = view(e_g, :, 3)
         nd = dot(normals[i, :], en)
         if nd < 1 - ntolerance
@@ -444,7 +465,7 @@ function stiffness(self::FEMMShellT3DSGMT, assembler::ASS, geom0::NodalField{FFl
     for i in 1:count(fes) # Loop over elements
         gathervalues_asmat!(geom0, ecoords, fes.conn[i]);
         _compute_J0!(J0, ecoords)
-        local_frame!(delegateof(fes), e_g, J0)
+        local_frame!(e_g, J0)
         fill!(elmat,  0.0); # Initialize element matrix
         for j in 1:npts
             locjac!(loc, J, ecoords, Ns[j], gradNparams[j])
@@ -525,7 +546,7 @@ function mass(self::FEMMShellT3DSGMT,  assembler::A,  geom0::NodalField{FFlt}, d
     for i = 1:count(fes) # Loop over elements
         gathervalues_asmat!(geom0, ecoords, fes.conn[i]);
         _compute_J0!(J0, ecoords)
-        local_frame!(delegateof(fes), e_g, J0)
+        local_frame!(e_g, J0)
         fill!(tmss, 0.0)
         fill!(rmss, 0.0)
         # Compute the translational and rotational masses corresponding to nodes
@@ -652,7 +673,7 @@ function inspectintegpoints(self::FEMMShellT3DSGMT, geom::NodalField{FFlt},  u::
         gathervalues_asmat!(u1, edisp, fes.conn[i]);
         ecoords1 .= ecoords .+ edisp
         _compute_J0!(J0, ecoords)
-        local_frame!(delegateof(fes), e_g, J0)
+        local_frame!(e_g, J0)
         fill!(elmat,  0.0); # Initialize element matrix
         for j in 1:npts
             locjac!(loc, J, ecoords, Ns[j], gradNparams[j])
