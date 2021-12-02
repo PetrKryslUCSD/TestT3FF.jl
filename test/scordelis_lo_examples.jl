@@ -95,8 +95,8 @@ function _execute_dsg_model(formul, n = 8, visualize = true)
     # Solve
     U = K\F
     scattersysvec!(dchi, U[:])
-    resultpercent =   dchi.values[nl, 3][1]/analyt_sol*100
-    @info "Solution: $(round(resultpercent, digits = 4))%"
+    result =   dchi.values[nl, 3][1]
+    @info "Solution: $(result), $(round(result/analyt_sol*100, digits = 4))%"
 
     # Visualization
     if visualize
@@ -110,7 +110,7 @@ function _execute_dsg_model(formul, n = 8, visualize = true)
         pl = render(plots)
     end
 
-    resultpercent
+    result
 end
 
 function test_convergence(ns = [4, 6, 8, 16, 32])
@@ -119,7 +119,7 @@ function test_convergence(ns = [4, 6, 8, 16, 32])
     results = []
     for n in ns
         v = _execute_dsg_model(formul, n, false)
-        push!(results, v)
+        push!(results, v/(-0.3024)*100)
     end
     return ns, results
 end
@@ -134,7 +134,7 @@ ns, results = scordelis_lo_examples.test_convergence()
 # These results come from Table 9 of An efficient three‑node triangular
 # Mindlin–Reissner flat shell element, Hosein Sangtarash1 · Hamed Ghohani
 # Arab1 · Mohammad R. Sohrabi1 · Mohammad R. Ghasemi1
-
+# they are all normalized relative to 0.3024# .   # 
 # Mesh Subdivision
 # 4, 8, 16, 32
 
@@ -176,7 +176,8 @@ objects = []
 
 ns, results = scordelis_lo_examples.test_convergence()
 
-all_results = [("Present", results, "*"), ("Allman", Allman, "x"), ("ProvKat", Providas_Kattis, "triangle"), ("Cook", Cook, "square"), ("SL", Shin_Lee, "o"), ("MITC3+", MITC3plus, "diamond")]
+compensate(r) = (0.3024/0.3006) .* r
+all_results = [("Present", compensate(results), "*"), ("Allman", compensate(Allman), "x"), ("ProvKat", compensate(Providas_Kattis), "triangle"), ("Cook", compensate(Cook), "square"), ("SL", compensate(Shin_Lee), "o"), ("MITC3+", compensate(MITC3plus), "diamond")]
 
 for r in  all_results
     @pgf p = PGFPlotsX.Plot(
@@ -211,33 +212,33 @@ end
 display(ax)
 pgfsave("scordelis_lo_examples-convergence.pdf", ax)
 
-ns, results = scordelis_lo_examples.test_convergence([4, 8, 16])
-q1, q2, q3 = results
-@show qtrue = (q2^2 - q1 * q3) / (2*q2 - q1 - q3)
+# ns, results = scordelis_lo_examples.test_convergence([4, 8, 16])
+# q1, q2, q3 = results
+# @show qtrue = (q2^2 - q1 * q3) / (2*q2 - q1 - q3)
 
-ns, results = scordelis_lo_examples.test_convergence(2 .* [4, 8, 16])
-q1, q2, q3 = results
-@show qtrue = (q2^2 - q1 * q3) / (2*q2 - q1 - q3)
+# ns, results = scordelis_lo_examples.test_convergence(2 .* [4, 8, 16])
+# q1, q2, q3 = results
+# @show qtrue = (q2^2 - q1 * q3) / (2*q2 - q1 - q3)
 
-ns, results = scordelis_lo_examples.test_convergence(4 .* [4, 8, 16])
+ns, results = scordelis_lo_examples.test_convergence([16, 32, 64])
 q1, q2, q3 = results
-@show qtrue = (q2^2 - q1 * q3) / (2*q2 - q1 - q3)
+@show qtrue = (q2^2 - q1 * q3) / (2*q2 - q1 - q3)  *  0.3024/100
 
-ns, results = scordelis_lo_examples.test_convergence(8 .* [4, 8, 16])
-q1, q2, q3 = results
-@show qtrue = (q2^2 - q1 * q3) / (2*q2 - q1 - q3)
+# ns, results = scordelis_lo_examples.test_convergence(8 .* [4, 8, 16])
+# q1, q2, q3 = results
+# @show qtrue = (q2^2 - q1 * q3) / (2*q2 - q1 - q3)
 
-ns, results = scordelis_lo_examples.test_convergence(16 .* [4, 8, 16])
-q1, q2, q3 = results
-@show qtrue = (q2^2 - q1 * q3) / (2*q2 - q1 - q3)
+# ns, results = scordelis_lo_examples.test_convergence(16 .* [4, 8, 16])
+# q1, q2, q3 = results
+# @show qtrue = (q2^2 - q1 * q3) / (2*q2 - q1 - q3)
 
-ns, results = scordelis_lo_examples.test_convergence(32 .* [4, 8, 16])
-q1, q2, q3 = results
-@show qtrue = (q2^2 - q1 * q3) / (2*q2 - q1 - q3)
+# ns, results = scordelis_lo_examples.test_convergence(32 .* [4, 8, 16])
+# q1, q2, q3 = results
+# @show qtrue = (q2^2 - q1 * q3) / (2*q2 - q1 - q3)
 
-ns, results = scordelis_lo_examples.test_convergence(64 .* [4, 8, 16])
-q1, q2, q3 = results
-@show qtrue = (q2^2 - q1 * q3) / (2*q2 - q1 - q3)
+# ns, results = scordelis_lo_examples.test_convergence(64 .* [4, 8, 16])
+# q1, q2, q3 = results
+# @show qtrue = (q2^2 - q1 * q3) / (2*q2 - q1 - q3)
 
 # julia> q1, q2, q3 = results                                                             
 # 3-element Vector{Any}:                                                                  
