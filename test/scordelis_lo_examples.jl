@@ -26,22 +26,32 @@ using FinEtoolsFlexStructures.FESetShellQ4Module: FESetShellQ4
 using FinEtoolsFlexStructures.FEMMShellT3FFModule
 using FinEtoolsFlexStructures.RotUtilModule: initial_Rfield, linear_update_rotation_field!, update_rotation_field!
 using FinEtoolsFlexStructures.VisUtilModule: plot_nodes, plot_midline, render, plot_space_box, plot_midsurface, space_aspectratio, save_to_json
+using FinEtools.MeshExportModule.VTKWrite: vtkwrite
 
-using Infiltrator
+# analytical solution for the vertical deflection and the midpoint of the
+# free edge 
+analyt_sol=-0.3024;
+# Parameters:
+E=4.32e8;
+nu=0.0;
+thickness = 0.25; # geometrical dimensions are in feet
+R = 25.0;
+L = 50.0;
+
+cylindrical!(csmatout::FFltMat, XYZ::FFltMat, tangents::FFltMat, fe_label::FInt) = begin
+    r = vec(XYZ); r[2] = 0.0; r[3] += R
+    csmatout[:, 3] .= vec(r)/norm(vec(r))
+    csmatout[:, 2] .= (0.0, 1.0, 0.0) #  this is along the axis
+    cross3!(view(csmatout, :, 1), view(csmatout, :, 2), view(csmatout, :, 3))
+    return csmatout
+end
 
 function _execute_dsg_model(formul, n = 8, visualize = true)
-    # analytical solution for the vertical deflection and the midpoint of the
-    # free edge 
-    analyt_sol=-0.3024;
-    # Parameters:
-    E=4.32e8;
-    nu=0.0;
-    thickness = 0.25; # geometrical dimensions are in feet
-    R = 25.0;
-    L = 50.0;
     
-    tolerance = R/n/1000
-    fens, fes = T3block(40/360*2*pi,L/2,n,n);
+    
+    tolerance = R/n/10
+    # fens, fes = T3blockrand(40/360*2*pi,L/2,n,n);
+    fens, fes = T3block(40/360*2*pi,L/2,n,n,:b);
     fens.xyz = xyz3(fens)
     for i in 1:count(fens)
         a=fens.xyz[i, 1]; y=fens.xyz[i, 2];
@@ -49,10 +59,13 @@ function _execute_dsg_model(formul, n = 8, visualize = true)
     end
 
     mater = MatDeforElastIso(DeforModelRed3D, E, nu)
+    ocsys = CSys(3, 3, cylindrical!)
     
     sfes = FESetShellT3()
     accepttodelegate(fes, sfes)
-    femm = formul.make(IntegDomain(fes, TriRule(1), thickness), mater)
+    femm = formul.make(IntegDomain(fes, TriRule(1), thickness),  mater)
+    femm.drilling_stiffness_scale = 1.0e-4
+    femm.mult_el_size = 0.2
     stiffness = formul.stiffness
     associategeometry! = formul.associategeometry!
 
@@ -100,6 +113,35 @@ function _execute_dsg_model(formul, n = 8, visualize = true)
 
     # Visualization
     if visualize
+
+        # Generate a graphical display of resultants
+        scalars = []
+        for nc in 1:3
+            fld = fieldfromintegpoints(femm, geom0, dchi, :moment, nc, outputcsys = ocsys)
+            push!(scalars, ("m$nc", fld.values))
+            fld = elemfieldfromintegpoints(femm, geom0, dchi, :moment, nc, outputcsys = ocsys)
+            push!(scalars, ("em$nc", fld.values))
+        end
+        vtkwrite("scordelis_lo_examples-$(n)-m.vtu", fens, fes; scalars = scalars, vectors = [("u", dchi.values[:, 1:3])])
+        scalars = []
+        for nc in 1:3
+            fld = fieldfromintegpoints(femm, geom0, dchi, :membrane, nc, outputcsys = ocsys)
+            push!(scalars, ("n$nc", fld.values))
+            fld = elemfieldfromintegpoints(femm, geom0, dchi, :membrane, nc, outputcsys = ocsys)
+            push!(scalars, ("en$nc", fld.values))
+        end
+        vtkwrite("scordelis_lo_examples-$(n)-n.vtu", fens, fes; scalars = scalars, vectors = [("u", dchi.values[:, 1:3])])
+        scalars = []
+        for nc in 1:2
+            fld = fieldfromintegpoints(femm, geom0, dchi, :shear, nc, outputcsys = ocsys)
+            push!(scalars, ("q$nc", fld.values))
+            fld = elemfieldfromintegpoints(femm, geom0, dchi, :shear, nc, outputcsys = ocsys)
+            push!(scalars, ("eq$nc", fld.values))
+        end
+        vtkwrite("scordelis_lo_examples-$(n)-q.vtu", fens, fes; scalars = scalars, vectors = [("u", dchi.values[:, 1:3])])
+
+        vtkwrite("scordelis_lo_examples-$(n)-uur.vtu", fens, fes; scalars = scalars, vectors = [("u", dchi.values[:, 1:3]), ("ur", dchi.values[:, 4:6])])
+
         scattersysvec!(dchi, (L/8)/maximum(abs.(U)).*U)
         update_rotation_field!(Rfield0, dchi)
         plots = cat(plot_space_box([[0 0 -L/2]; [L/2 L/2 L/2]]),
@@ -113,12 +155,12 @@ function _execute_dsg_model(formul, n = 8, visualize = true)
     result
 end
 
-function test_convergence(ns = [4, 6, 8, 16, 32])
+function test_convergence(ns = [4, 6, 8, 16, 32], visualize = false)
     formul = FEMMShellT3FFModule
     @info "Scordelis-Lo shell"
     results = []
     for n in ns
-        v = _execute_dsg_model(formul, n, false)
+        v = _execute_dsg_model(formul, n, visualize)
         push!(results, v/(-0.3024)*100)
     end
     return ns, results
@@ -128,7 +170,8 @@ end # module
 
 using .scordelis_lo_examples
 
-ns, results = scordelis_lo_examples.test_convergence()
+# Visualized internal resultants
+ns, results = scordelis_lo_examples.test_convergence([2*16,], true)
 
 
 # These results come from Table 9 of An efficient three‑node triangular
@@ -244,7 +287,12 @@ q1, q2, q3 = results
 # 3-element Vector{Any}:                                                                  
 #  99.65925843568742                                                                      
 #  99.6820694134264                                                                       
-#  99.68801945695984                                                                      
+#  99.68801945695984      
+
+q1 =  -0.2885517078616122
+q2 =  -0.2978284489578761
+q3 =  -0.3003728234489632
+@show qtrue = (q2^2 - q1 * q3) / (2*q2 - q1 - q3)                                                                   
                                                                                         
 # julia> @show qtrue = (q2^2 - q1 * q3) / (2*q2 - q1 - q3)                                
 # qtrue = (q2 ^ 2 - q1 * q3) / ((2q2 - q1) - q3) = 99.69011916380857                      
