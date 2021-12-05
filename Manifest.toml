@@ -232,9 +232,9 @@ version = "0.12.7"
 
 [[deps.FinEtools]]
 deps = ["Arpack", "DataDrop", "DelimitedFiles", "HDF5", "LinearAlgebra", "LoopVectorization", "Printf", "Random", "SparseArrays", "Statistics", "StatsBase", "SymRCM", "Test", "Unicode", "WriteVTK"]
-git-tree-sha1 = "a6fd6f9c201aca9a01661796cbf8cc4f35df5a55"
+git-tree-sha1 = "1060dcf0c9267371335d2c35b5b20549e1a7d439"
 uuid = "91bb5406-6c9a-523d-811d-0644c4229550"
-version = "5.2.8"
+version = "5.3.1"
 
 [[deps.FinEtoolsAcoustics]]
 deps = ["Arpack", "FinEtools", "FinEtoolsDeforLinear", "LinearAlgebra", "SparseArrays", "Statistics", "Test"]
@@ -250,11 +250,11 @@ version = "1.2.1"
 
 [[deps.FinEtoolsFlexStructures]]
 deps = ["Arpack", "Dierckx", "FinEtools", "FinEtoolsDeforLinear", "Gnuplot", "Infiltrator", "JSON", "LinearAlgebra", "PlotlyBase", "PlotlyJS", "Revise", "SparseArrays", "Statistics", "SymRCM", "Test"]
-git-tree-sha1 = "92de6db538b0284f1905f4c7cb560d52683604ed"
+git-tree-sha1 = "5f2b82dc303dbbf3595c0b9388518f0942c6fcba"
 repo-rev = "main"
 repo-url = "https://github.com/PetrKryslUCSD/FinEtoolsFlexStructures.jl.git"
 uuid = "723391e6-6814-4d1d-921c-018f691214d8"
-version = "0.1.1"
+version = "0.2.0"
 
 [[deps.FixedPointNumbers]]
 deps = ["Statistics"]
