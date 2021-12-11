@@ -60,7 +60,7 @@ function _execute(tL_ratio = 1/100, g = 80*0.1^0, analyt_sol=-9.3355e-5, n = 32,
     sfes = FESetShellT3()
     accepttodelegate(fes, sfes)
     femm = formul.make(IntegDomain(fes, TriRule(1), thickness), mater)
-    femm.drilling_stiffness_scale = 0.1
+    # femm.drilling_stiffness_scale = 0.1
     stiffness = formul.stiffness
     associategeometry! = formul.associategeometry!
 
@@ -140,12 +140,12 @@ function test_convergence()
     return ns, all_results
 end
 
-function test_0_001()
+function test_0_001(ns = [8, 16, 32, 48, ])
     tL_ratio = 1/1000 
     g = 80*0.1^1
     analyt_sol = -6.3941e-3
     
-    ns = [8, 16, 32, 48]
+    
     @info "Clamped hypar, t/L=$(tL_ratio)"
     results = Float64[]
     for n in ns
@@ -248,7 +248,7 @@ objects = []
 Allman = [0.07, 0.307, 0.829, 0.954]
 Providas_Kattis = [1.07, 1.00, 0.985, 0.985]
 Cook_flat_stiffened = [0.563, 0.939, 0.984, 0.991]
-ns, results = clamped_hypar_examples.test_0_001()
+@show ns, results = clamped_hypar_examples.test_0_001()
 
 all_results = [("Present", results, "*"), ("Allman", Allman, "x"), ("Providas, Kattis", Providas_Kattis, "triangle"), ("Cook, flat, stiffened", Cook_flat_stiffened, "square")]
 
@@ -288,3 +288,8 @@ end
 
 display(ax)
 pgfsave("clamped_hypar_examples-0_001.pdf", ax)
+
+using .clamped_hypar_examples
+ns, all_results = clamped_hypar_examples.test_convergence([24, 48, 96])
+q1, q2, q3 = all_results[:]
+qtrue = (q2^2 - q1 * q3) / (2*q2 - q1 - q3)
