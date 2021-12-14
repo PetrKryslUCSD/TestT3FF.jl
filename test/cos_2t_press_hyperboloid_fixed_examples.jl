@@ -31,7 +31,7 @@ using FinEtools.MeshExportModule.VTKWrite: vtkwrite
 E = 2.0e5
 nu = 1/3;
 pressure = 1.0;
-L = 2.0;
+Length = 2.0;
 
 # The hyperboloid axis is parallel to Y
 
@@ -57,9 +57,9 @@ function computetrac!(forceout::FFltVec, XYZ::FFltMat, tangents::FFltMat, fe_lab
     return forceout
 end
 
-function _execute_dsg_model(formul, n = 8, thickness = R/100, visualize = true, distortion = 0.0)
-    tolerance = L/n/100
-    fens, fes = distortblock(T3block, 90/360*2*pi, L/2, n, n, distortion, distortion);
+function _execute_dsg_model(formul, n = 8, thickness = Length/2/100, visualize = true, distortion = 0.0)
+    tolerance = Length/n/100
+    fens, fes = distortblock(T3block, 90/360*2*pi, Length/2, n, n, distortion, distortion);
     fens.xyz = xyz3(fens)
     for i in 1:count(fens)
         a=fens.xyz[i, 1]; y=fens.xyz[i, 2];
@@ -99,7 +99,7 @@ function _execute_dsg_model(formul, n = 8, thickness = R/100, visualize = true, 
         setebc!(dchi, l1, true, i)
     end
     # clamped edge perpendicular to Y
-    l1 = selectnode(fens; box = Float64[-Inf Inf L/2 L/2 -Inf Inf], inflate = tolerance)
+    l1 = selectnode(fens; box = Float64[-Inf Inf Length/2 Length/2 -Inf Inf], inflate = tolerance)
     for i in [1,2,3,4,5,6]
         setebc!(dchi, l1, true, i)
     end
@@ -149,9 +149,9 @@ function _execute_dsg_model(formul, n = 8, thickness = R/100, visualize = true, 
 
     # Visualization
     if visualize
-        scattersysvec!(dchi, (L/8)/maximum(abs.(U)).*U)
+        scattersysvec!(dchi, (Length/8)/maximum(abs.(U)).*U)
         update_rotation_field!(Rfield0, dchi)
-        plots = cat(plot_space_box([[0 0 -L/2]; [L/2 L/2 L/2]]),
+        plots = cat(plot_space_box([[0 0 -Length/2]; [Length/2 Length/2 Length/2]]),
             #plot_nodes(fens),
             plot_midsurface(fens, fes; x = geom0.values, facecolor = "rgb(12, 12, 123)"),
             plot_midsurface(fens, fes; x = geom0.values, u = dchi.values[:, 1:3], R = Rfield0.values);
@@ -167,7 +167,7 @@ function test_convergence(formul, thicknessmult = 1/100, distortion = 0.0)
     results = []
     ns = [16, 32, 64, 128, 256]
     for n in ns
-        push!(results, _execute_dsg_model(formul, n, L/2*thicknessmult, false, 2*distortion/n))
+        push!(results, _execute_dsg_model(formul, n, Length/2*thicknessmult, false, 2*distortion/n))
     end
     return ns, results
 end
@@ -195,7 +195,7 @@ let
 
         objects = []
 
-        all_results = [("R/100", errors100, "*"), ("R/1000", errors1000, "x"), ("R/10000", errors10000, "triangle"), ("R/100000", errors100000, "diamond"), ]
+        all_results = [("t=L/100", errors100, "*"), ("t=L/1000", errors1000, "x"), ("t=L/10000", errors10000, "triangle"), ("t=L/100000", errors100000, "diamond"), ]
 
         for r in  all_results
             @pgf p = PGFPlotsX.Plot(
