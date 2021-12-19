@@ -179,16 +179,17 @@ end
 
 end # module
 
-using .LE5_Z_cantilever_examples
-m = LE5_Z_cantilever_examples
-pointAstressX = m.test_convergence()
-ns = 2 .^  [0, 1, 2, 3, 4, ]
-
 using PGFPlotsX
 
-objects = []
+using .LE5_Z_cantilever_examples
+m = LE5_Z_cantilever_examples
 
-for r in  all_results
+let
+    pointAstressX = m.test_convergence()
+    ns = 2 .^  [0, 1, 2, 3, 4, ]
+
+    objects = []
+
     @pgf p = PGFPlotsX.Plot(
     {
     color = "black",
@@ -199,24 +200,24 @@ for r in  all_results
     Coordinates([v for v in  zip(ns, (-108 .- pointAstressX ./ 1.0e6) ./ 108)])
     )
     push!(objects, p)
-    
-end
 
 
-@pgf ax = Axis(
+
+    @pgf ax = Axis(
     {
-        xlabel = "Number of Elements / side [ND]",
-        ylabel = "Normalized Error of Axial Stress at A [ND]",
+    xlabel = "Number of Elements / side [ND]",
+    ylabel = "Normalized Error of Axial Stress at A [ND]",
         # xmin = range[1],
         # xmax = range[2],
-        xmode = "linear", 
-        ymode = "linear",
-        yminorgrids = "true",
-        grid = "both",
-        legend_pos = "north east"
+    xmode = "linear", 
+    ymode = "linear",
+    yminorgrids = "true",
+    grid = "both",
+    legend_pos = "north east"
     },
     objects...
-)
+    )
 
-display(ax)
-pgfsave("LE5_Z_cantilever-convergence.pdf", ax)
+    display(ax)
+    pgfsave("LE5_Z_cantilever-convergence.pdf", ax)
+end

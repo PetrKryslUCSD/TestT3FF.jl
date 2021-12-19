@@ -25,7 +25,7 @@ using FinEtoolsFlexStructures.FESetShellT3Module: FESetShellT3
 using FinEtoolsFlexStructures.FESetShellQ4Module: FESetShellQ4
 using FinEtoolsFlexStructures.FEMMShellT3FFModule
 using FinEtoolsFlexStructures.FEMMShellT3FFModule: num_normals
-using T3FF_Verification.FEMMShellT3DSGMTModule
+using TestT3FF.FEMMShellT3DSGMTModule
 using FinEtoolsFlexStructures.RotUtilModule: initial_Rfield, linear_update_rotation_field!, update_rotation_field!
 using FinEtoolsFlexStructures.VisUtilModule: plot_nodes, plot_midline, render, plot_space_box, plot_midsurface, space_aspectratio, save_to_json
 
@@ -192,37 +192,39 @@ es = [18, 57, 72, 288, 1152, 4608, 18432, 73728, 294912, 1179648]
 
 styles = ["solid", "dashed", "dotted", "dashdotted", "densely dotted"]
 
-for (drilling_stiffness_scale, results, style) in zip(all_drilling_stiffness_scale, all_results, styles)
-    @pgf p = PGFPlotsX.Plot(
-    {
-    color = "black",
-    line_width  = 0.7, 
-    style = style,
-    },
-    Coordinates([v for v in  zip(es, results)])
-    )
-    push!(objects, p)
-    push!(objects, LegendEntry("$drilling_stiffness_scale"))
-end
-
-@pgf ax = Axis(
-    {
-        xlabel = "Number of Elements [ND]",
-        ylabel = "Normalized Displacement [ND]",
-        ymin = 0.95,
-        ymax = 1.0,
-        xmode = "log", 
-        ymode = "linear",
-        yminorgrids = "true",
-        grid = "both",
-        legend_style = {
-            at = Coordinate(0.5, 1.05),
-            anchor = "south",
-            legend_columns = -1
+let
+    for (drilling_stiffness_scale, results, style) in zip(all_drilling_stiffness_scale, all_results, styles)
+        @pgf p = PGFPlotsX.Plot(
+        {
+        color = "black",
+        line_width  = 0.7, 
+        style = style,
         },
+        Coordinates([v for v in  zip(es, results)])
+        )
+        push!(objects, p)
+        push!(objects, LegendEntry("$drilling_stiffness_scale"))
+    end
+
+    @pgf ax = Axis(
+    {
+    xlabel = "Number of Elements [ND]",
+    ylabel = "Normalized Displacement [ND]",
+    ymin = 0.95,
+    ymax = 1.0,
+    xmode = "log", 
+    ymode = "linear",
+    yminorgrids = "true",
+    grid = "both",
+    legend_style = {
+    at = Coordinate(0.5, 1.05),
+    anchor = "south",
+    legend_columns = -1
+    },
     },
     objects...
-)
+    )
 
-display(ax)
-pgfsave("raasch_examples-dependence-on-drilling_stiffness_scale.pdf", ax)
+    display(ax)
+    pgfsave("raasch_examples-dependence-on-drilling_stiffness_scale.pdf", ax)
+end
