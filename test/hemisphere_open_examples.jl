@@ -206,198 +206,208 @@ end
 
 end # module
 
-using .hemisphere_open_examples
-ns, results = hemisphere_open_examples.test_convergence()
 
 
 
 using PGFPlotsX
 
-objects = []
+let
+    using .hemisphere_open_examples
+    ns, results = hemisphere_open_examples.test_convergence()
+    
+    objects = []
 
 
-Allman = [
-20.33
-37.68
-87.11
-]
-Cook_flat_stiffened = [
-66.22
-94.55
-98.22
-]
-Providas_Kattis = [
-99.90
-99.06
-98.37
-]
+    Allman = [
+    20.33
+    37.68
+    87.11
+    ]
+    Cook_flat_stiffened = [
+    66.22
+    94.55
+    98.22
+    ]
+    Providas_Kattis = [
+    99.90
+    99.06
+    98.37
+    ]
 
-all_results = [("Present", results, "*"), ("Allman", Allman, "x"), ("Providas, Kattis", Providas_Kattis, "triangle"), ("Cook, flat, stiffened", Cook_flat_stiffened, "square")]
+    all_results = [("Present", results, "*"), ("Allman", Allman, "x"), ("Providas, Kattis", Providas_Kattis, "triangle"), ("Cook, flat, stiffened", Cook_flat_stiffened, "square")]
 
-for r in  all_results
+    for r in  all_results
+        @pgf p = PGFPlotsX.Plot(
+        {
+        color = "black",
+        line_width  = 0.7, 
+        style = "solid",
+        mark = "$(r[3])"
+        },
+        Coordinates([v for v in  zip(ns, r[2])])
+        )
+        push!(objects, p)
+        push!(objects, LegendEntry("$(r[1])"))
+    end
+
+
+    @pgf ax = Axis(
+    {
+    xlabel = "Number of Elements / side [ND]",
+    ylabel = "Normalized Displacement [ND]",
+        # xmin = range[1],
+        # xmax = range[2],
+    xmode = "linear", 
+    ymode = "linear",
+    yminorgrids = "true",
+    grid = "both",
+    legend_style = {
+    at = Coordinate(0.5, 1.05),
+    anchor = "south",
+    legend_columns = -1
+    },
+    },
+    objects...
+    )
+
+    display(ax)
+    pgfsave("hemisphere_open-convergence.pdf", ax)
+end
+
+let
+    test_convergence_normals = hemisphere_open_examples.test_convergence_normals
+    ns = [4, 8, 16, 32, 64, 128]
+
+    objects = []
+
+
+    ns, results = test_convergence_normals(ns, false, 0.1)
     @pgf p = PGFPlotsX.Plot(
     {
     color = "black",
     line_width  = 0.7, 
     style = "solid",
-    mark = "$(r[3])"
+    mark = "x"
     },
-    Coordinates([v for v in  zip(ns, r[2])])
+    Coordinates([v for v in  zip(ns, results)])
     )
     push!(objects, p)
-    push!(objects, LegendEntry("$(r[1])"))
+    push!(objects, LegendEntry("0.1"))
+
+    ns, results = test_convergence_normals(ns, false, 1.0)
+    @pgf p = PGFPlotsX.Plot(
+    {
+    color = "black",
+    line_width  = 0.7, 
+    style = "solid",
+    mark = "o"
+    },
+    Coordinates([v for v in  zip(ns, results)])
+    )
+    push!(objects, p)
+    push!(objects, LegendEntry("1.0"))
+
+    ns, results = test_convergence_normals(ns, false, 100.0)
+    @pgf p = PGFPlotsX.Plot(
+    {
+    color = "black",
+    line_width  = 0.7, 
+    style = "solid",
+    mark = "diamond"
+    },
+    Coordinates([v for v in  zip(ns, results)])
+    )
+    push!(objects, p)
+    push!(objects, LegendEntry("100.0"))
+
+
+    @pgf ax = Axis(
+    {
+    xlabel = "Number of Elements / side [ND]",
+    ylabel = "Normalized Displacement [ND]",
+        # xmin = range[1],
+        # xmax = range[2],
+    xmode = "linear", 
+    ymode = "linear",
+    yminorgrids = "true",
+    grid = "both",
+    legend_style = {
+    at = Coordinate(0.5, 1.05),
+    anchor = "south",
+    legend_columns = -1
+    },
+    },
+    objects...
+    )
+
+    display(ax)
+    pgfsave("hemisphere_open-normals-approximate-convergence.pdf", ax)
 end
 
+let
+    test_convergence_normals = hemisphere_open_examples.test_convergence_normals
+    ns = [4, 8, 16, 32, 64, 128]
 
-@pgf ax = Axis(
+    objects = []
+
+    ns, results = test_convergence_normals(ns, true, 0.1)
+    @pgf p = PGFPlotsX.Plot(
     {
-        xlabel = "Number of Elements / side [ND]",
-        ylabel = "Normalized Displacement [ND]",
+    color = "black",
+    line_width  = 0.7, 
+    style = "solid",
+    mark = "x"
+    },
+    Coordinates([v for v in  zip(ns, results)])
+    )
+    push!(objects, p)
+    push!(objects, LegendEntry("0.1"))
+
+    ns, results = test_convergence_normals(ns, true, 1.0)
+    @pgf p = PGFPlotsX.Plot(
+    {
+    color = "black",
+    line_width  = 0.7, 
+    style = "solid",
+    mark = "o"
+    },
+    Coordinates([v for v in  zip(ns, results)])
+    )
+    push!(objects, p)
+    push!(objects, LegendEntry("1.0"))
+
+    ns, results = test_convergence_normals(ns, true, 100.0)
+    @pgf p = PGFPlotsX.Plot(
+    {
+    color = "black",
+    line_width  = 0.7, 
+    style = "solid",
+    mark = "diamond"
+    },
+    Coordinates([v for v in  zip(ns, results)])
+    )
+    push!(objects, p)
+    push!(objects, LegendEntry("100.0"))
+
+    @pgf ax = Axis(
+    {
+    xlabel = "Number of Elements / side [ND]",
+    ylabel = "Normalized Displacement [ND]",
         # xmin = range[1],
         # xmax = range[2],
-        xmode = "linear", 
-        ymode = "linear",
-        yminorgrids = "true",
-        grid = "both",
-        legend_style = {
-            at = Coordinate(0.5, 1.05),
-            anchor = "south",
-            legend_columns = -1
-        },
+    xmode = "linear", 
+    ymode = "linear",
+    yminorgrids = "true",
+    grid = "both",
+    legend_style = {
+    at = Coordinate(0.5, 1.05),
+    anchor = "south",
+    legend_columns = -1
+    },
     },
     objects...
-)
+    )
 
-display(ax)
-pgfsave("hemisphere_open-convergence.pdf", ax)
-
-test_convergence_normals = hemisphere_open_examples.test_convergence_normals
-ns = [4, 8, 16, 32, 64, 128]
-
-objects = []
-
-
-@show ns, results = test_convergence_normals(ns, false, 0.1)
-@pgf p = PGFPlotsX.Plot(
-{
-color = "black",
-line_width  = 0.7, 
-style = "solid",
-mark = "x"
-},
-Coordinates([v for v in  zip(ns, results)])
-)
-push!(objects, p)
-push!(objects, LegendEntry("0.1"))
-
-@show ns, results = test_convergence_normals(ns, false, 1.0)
-@pgf p = PGFPlotsX.Plot(
-{
-color = "black",
-line_width  = 0.7, 
-style = "solid",
-mark = "o"
-},
-Coordinates([v for v in  zip(ns, results)])
-)
-push!(objects, p)
-push!(objects, LegendEntry("1.0"))
-
-@show ns, results = test_convergence_normals(ns, false, 100.0)
-@pgf p = PGFPlotsX.Plot(
-{
-color = "black",
-line_width  = 0.7, 
-style = "solid",
-mark = "diamond"
-},
-Coordinates([v for v in  zip(ns, results)])
-)
-push!(objects, p)
-push!(objects, LegendEntry("100.0"))
-
-
-@pgf ax = Axis(
-    {
-        xlabel = "Number of Elements / side [ND]",
-        ylabel = "Normalized Displacement [ND]",
-        # xmin = range[1],
-        # xmax = range[2],
-        xmode = "linear", 
-        ymode = "linear",
-        yminorgrids = "true",
-        grid = "both",
-        legend_style = {
-            at = Coordinate(0.5, 1.05),
-            anchor = "south",
-            legend_columns = -1
-        },
-    },
-    objects...
-)
-
-display(ax)
-pgfsave("hemisphere_open-normals-approximate-convergence.pdf", ax)
-
-objects = []
-
-@show ns, results = test_convergence_normals(ns, true, 0.1)
-@pgf p = PGFPlotsX.Plot(
-{
-color = "black",
-line_width  = 0.7, 
-style = "solid",
-mark = "x"
-},
-Coordinates([v for v in  zip(ns, results)])
-)
-push!(objects, p)
-push!(objects, LegendEntry("0.1"))
-
-@show ns, results = test_convergence_normals(ns, true, 1.0)
-@pgf p = PGFPlotsX.Plot(
-{
-color = "black",
-line_width  = 0.7, 
-style = "solid",
-mark = "o"
-},
-Coordinates([v for v in  zip(ns, results)])
-)
-push!(objects, p)
-push!(objects, LegendEntry("1.0"))
-
-@show ns, results = test_convergence_normals(ns, true, 100.0)
-@pgf p = PGFPlotsX.Plot(
-{
-color = "black",
-line_width  = 0.7, 
-style = "solid",
-mark = "diamond"
-},
-Coordinates([v for v in  zip(ns, results)])
-)
-push!(objects, p)
-push!(objects, LegendEntry("100.0"))
-
-@pgf ax = Axis(
-    {
-        xlabel = "Number of Elements / side [ND]",
-        ylabel = "Normalized Displacement [ND]",
-        # xmin = range[1],
-        # xmax = range[2],
-        xmode = "linear", 
-        ymode = "linear",
-        yminorgrids = "true",
-        grid = "both",
-        legend_style = {
-            at = Coordinate(0.5, 1.05),
-            anchor = "south",
-            legend_columns = -1
-        },
-    },
-    objects...
-)
-
-display(ax)
-pgfsave("hemisphere_open-normals-exact-convergence.pdf", ax)
+    display(ax)
+    pgfsave("hemisphere_open-normals-exact-convergence.pdf", ax)
+end
