@@ -30,7 +30,6 @@ using FinEtoolsDeforLinear
 using FinEtoolsFlexStructures.FESetShellT3Module: FESetShellT3
 using FinEtoolsFlexStructures.FESetShellQ4Module: FESetShellQ4
 using FinEtoolsFlexStructures.FEMMShellT3FFModule
-using FinEtoolsFlexStructures.FEMMShellT3FFAModule
 using FinEtoolsFlexStructures.RotUtilModule: initial_Rfield, linear_update_rotation_field!, update_rotation_field!
 using FinEtoolsFlexStructures.VisUtilModule: plot_nodes, plot_midline, render, plot_space_box, plot_midsurface, space_aspectratio, save_to_json
 using FinEtools.MeshExportModule.VTKWrite: vtkwrite
@@ -263,74 +262,72 @@ end # module
 
 using PGFPlotsX
 
-if true
-
 using .clamped_hypar_examples
 
-for orientation in (:a, :b)
-    ns, all_results = clamped_hypar_examples.test_convergence(orientation)
+let
+    for orientation in (:a, :b)
+        ns, all_results = clamped_hypar_examples.test_convergence(orientation)
 
-    objects = []
+        objects = []
 
-    results = all_results[1]
-    @pgf p = PGFPlotsX.Plot(
-    {
-    color = "black",
-    line_width  = 0.7
-    },
-    Coordinates([v for v in  zip(1 ./ ns, results)])
-    )
-    push!(objects, p)
-    push!(objects, LegendEntry("t/L=1/100"))
+        results = all_results[1]
+        @pgf p = PGFPlotsX.Plot(
+        {
+        color = "black",
+        line_width  = 0.7
+        },
+        Coordinates([v for v in  zip(1 ./ ns, results)])
+        )
+        push!(objects, p)
+        push!(objects, LegendEntry("t/L=1/100"))
 
-    results = all_results[2]
-    @pgf p = PGFPlotsX.Plot(
-    {
-    color = "black",
-    style = "dashed",
-    line_width  = 0.7
-    },
-    Coordinates([v for v in  zip(1 ./ ns, results)])
-    )
-    push!(objects, p)
-    push!(objects, LegendEntry("t/L=1/1000"))
+        results = all_results[2]
+        @pgf p = PGFPlotsX.Plot(
+        {
+        color = "black",
+        style = "dashed",
+        line_width  = 0.7
+        },
+        Coordinates([v for v in  zip(1 ./ ns, results)])
+        )
+        push!(objects, p)
+        push!(objects, LegendEntry("t/L=1/1000"))
 
-    results = all_results[3]
-    @pgf p = PGFPlotsX.Plot(
-    {
-    color = "black",
-    style = "dotted",
-    line_width  = 0.7
-    },
-    Coordinates([v for v in  zip(1 ./ ns, results)])
-    )
-    push!(objects, p)
-    push!(objects, LegendEntry("t/L=1/10000"))
+        results = all_results[3]
+        @pgf p = PGFPlotsX.Plot(
+        {
+        color = "black",
+        style = "dotted",
+        line_width  = 0.7
+        },
+        Coordinates([v for v in  zip(1 ./ ns, results)])
+        )
+        push!(objects, p)
+        push!(objects, LegendEntry("t/L=1/10000"))
 
-    @pgf ax = Axis(
-    {
-    xlabel = "Relative Element Size [ND]",
-    ylabel = "Normalized Displacement [ND]",
+        @pgf ax = Axis(
+        {
+        xlabel = "Relative Element Size [ND]",
+        ylabel = "Normalized Displacement [ND]",
         ymin = 0.7,
         ymax = 1.1,
-    xmode = "log", 
-    ymode = "linear",
-    yminorgrids = "true",
-    grid = "both",
-    legend_style = {
-    at = Coordinate(0.5, 1.05),
-    anchor = "south",
-    legend_columns = -1
-    },
-    },
-    objects...
-    )
+        xmode = "log", 
+        ymode = "linear",
+        yminorgrids = "true",
+        grid = "both",
+        legend_style = {
+        at = Coordinate(0.5, 1.05),
+        anchor = "south",
+        legend_columns = -1
+        },
+        },
+        objects...
+        )
 
-    display(ax)
-    pgfsave("clamped_hypar_examples-dependence-on-t-L-$(orientation).pdf", ax)
+        display(ax)
+        pgfsave("clamped_hypar_examples-dependence-on-t-L-$(orientation).pdf", ax)
+    end
 end
-
-end # if false
 
 using PGFPlotsX
 
@@ -364,48 +361,48 @@ objects = []
 # a Department of Mechanical Engineering, Korea Advanced Institute of Science and Technology, 291 Daehak-ro, Yuseong-gu, 
 MITC3p = ("MITC3+", [4, 8, 16, 32, 64], [0.9533 0.9589 0.9728 0.9868 0.9951], "diamond")
 
-@show ns, resultsa = clamped_hypar_examples.test_0_001(:a, [4, 8, 16, 32, 64, 128, 256])
-@show ns, resultsb = clamped_hypar_examples.test_0_001(:b, [4, 8, 16, 32, 64, 128, 256])
+ns, resultsa = clamped_hypar_examples.test_0_001(:a, [4, 8, 16, 32, 64, 128, 256])
+ns, resultsb = clamped_hypar_examples.test_0_001(:b, [4, 8, 16, 32, 64, 128, 256])
 all_results = [("Present (a)", ns, resultsa, "*"), ("Present (b)", ns, resultsb, "o"), MITC3p]
 
+let
+    for r in  all_results
+        @pgf p = PGFPlotsX.Plot(
+        {
+        color = "black",
+        line_width  = 0.7, 
+        style = "solid",
+        mark = "$(r[4])"
+        },
+        Coordinates([v for v in  zip(1 ./ (r[2]), abs.(1 .- r[3]))])
+        )
+        push!(objects, p)
+        push!(objects, LegendEntry("$(r[1])"))
+    end
 
-for r in  all_results
-    @pgf p = PGFPlotsX.Plot(
+
+    @pgf ax = Axis(
     {
-    color = "black",
-    line_width  = 0.7, 
-    style = "solid",
-    mark = "$(r[4])"
-    },
-    Coordinates([v for v in  zip(1 ./ (r[2]), abs.(1 .- r[3]))])
-    )
-    push!(objects, p)
-    push!(objects, LegendEntry("$(r[1])"))
-end
-
-
-@pgf ax = Axis(
-    {
-        xlabel = "Relative element size [ND]",
-        ylabel = "Normalized Displacement Error [ND]",
+    xlabel = "Relative element size [ND]",
+    ylabel = "Normalized Displacement Error [ND]",
         # xmin = range[1],
         # xmax = range[2],
-        xmode = "log", 
-        ymode = "log",
-        yminorgrids = "true",
-        grid = "both",
-        legend_style = {
-            at = Coordinate(0.5, 1.05),
-            anchor = "south",
-            legend_columns = -1
-        },
+    xmode = "log", 
+    ymode = "log",
+    yminorgrids = "true",
+    grid = "both",
+    legend_style = {
+    at = Coordinate(0.5, 1.05),
+    anchor = "south",
+    legend_columns = -1
+    },
     },
     objects...
-)
+    )
 
-display(ax)
-pgfsave("clamped_hypar_examples-0_001-errors.pdf", ax)
-
+    display(ax)
+    pgfsave("clamped_hypar_examples-0_001-errors.pdf", ax)
+end
 
 using .clamped_hypar_examples
 ns, all_results = clamped_hypar_examples.test_0_001(:a, 4 .* [24, 48, 96])
