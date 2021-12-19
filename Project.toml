@@ -1,4 +1,4 @@
-name = "T3FF_Verification"
+name = "TestT3FF"
 uuid = "5837e7f9-23d3-412d-84ee-a8ad88e088f6"
 authors = ["Petr Krysl <pkrysl@ucsd.edu>"]
 version = "0.2.0"
