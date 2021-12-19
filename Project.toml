@@ -1,7 +1,7 @@
 name = "TestT3FF"
 uuid = "5837e7f9-23d3-412d-84ee-a8ad88e088f6"
 authors = ["Petr Krysl <pkrysl@ucsd.edu>"]
-version = "0.2.0"
+version = "0.2.1"
 
 [deps]
 Arpack = "7d9fca2a-8960-54d3-9f78-7d1dccf2cb97"
@@ -15,3 +15,7 @@ LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 PGFPlotsX = "8314cec4-20b6-5062-9cdb-752b83310925"
 Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+
+[compat]
+FinEtoolsFlexStructures = "^0.3"
+julia = "^1.6"
