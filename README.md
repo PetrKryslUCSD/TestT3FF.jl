@@ -4,8 +4,7 @@ Illustration of the T3FF general flat-facet shell element capabilities.
 The paper describing this element has been submitted 12/2021.
 
 The functionality of the shell finite element is provided by the package
-[`FinEtoolsFlexStructures`]
-(https://github.com/PetrKryslUCSD/FinEtoolsFlexStructures.jl).
+[`FinEtoolsFlexStructures`](https://github.com/PetrKryslUCSD/FinEtoolsFlexStructures.jl).
 
 Assuming the `TestT3FF.jl` package was cloned from Github, change your working directory
 into the `TestT3FF.jl` folder, start `julia`, and then run
