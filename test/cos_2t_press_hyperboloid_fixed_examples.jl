@@ -23,8 +23,8 @@ using FinEtoolsDeforLinear
 using FinEtoolsFlexStructures.FESetShellT3Module: FESetShellT3
 using FinEtoolsFlexStructures.FESetShellQ4Module: FESetShellQ4
 using FinEtoolsFlexStructures.FEMMShellT3FFModule
-using FinEtoolsFlexStructures.RotUtilModule: initial_Rfield, linear_update_rotation_field!, update_rotation_field!
-using FinEtoolsFlexStructures.VisUtilModule: plot_nodes, plot_midline, render, plot_space_box, plot_midsurface, space_aspectratio, save_to_json
+using FinEtoolsFlexStructures.RotUtilModule: initial_Rfield, update_rotation_field!
+using VisualStructures: plot_nodes, plot_midline, render, plot_space_box, plot_midsurface, space_aspectratio, save_to_json
 using FinEtools.MeshExportModule.VTKWrite: vtkwrite
 
 # Parameters:
@@ -57,7 +57,7 @@ function computetrac!(forceout::FFltVec, XYZ::FFltMat, tangents::FFltMat, fe_lab
     return forceout
 end
 
-function _execute_dsg_model(formul, n = 8, thickness = Length/2/100, visualize = true, distortion = 0.0)
+function _execute(formul, n = 8, thickness = Length/2/100, visualize = false, distortion = 0.0)
     tolerance = Length/n/100
     fens, fes = distortblock(T3block, 90/360*2*pi, Length/2, n, n, distortion, distortion);
     fens.xyz = xyz3(fens)
@@ -167,7 +167,7 @@ function test_convergence(formul, thicknessmult = 1/100, distortion = 0.0)
     results = []
     ns = [16, 32, 64, 128, 256]
     for n in ns
-        push!(results, _execute_dsg_model(formul, n, Length/2*thicknessmult, false, 2*distortion/n))
+        push!(results, _execute(formul, n, Length/2*thicknessmult, false, 2*distortion/n))
     end
     return ns, results
 end

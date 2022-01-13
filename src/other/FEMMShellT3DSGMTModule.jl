@@ -9,7 +9,7 @@ import FinEtools.FEMMBaseModule: associategeometry!
 using FinEtoolsDeforLinear.MatDeforLinearElasticModule: tangentmoduli!, update!, thermalstrain!
 using FinEtools.MatrixUtilityModule: add_btdb_ut_only!, complete_lt!, locjac!, add_nnt_ut_only!, add_btsigma!
 using FinEtoolsFlexStructures.FESetShellT3Module: FESetShellT3
-using FinEtoolsFlexStructures.TransformerModule: Transformer
+using FinEtoolsFlexStructures.TransformerModule: QTEQTransformer
 
 const __nn = 3 # number of nodes
 const __ndof = 6 # number of degrees of freedom per node
@@ -453,7 +453,7 @@ function stiffness(self::FEMMShellT3DSGMT, assembler::ASS, geom0::NodalField{FFl
     ecoords_e = self._ecoords_e
     e_g, n_e, nvalid, Te = self._e_g, self._n_e, self._nvalid, self._Te
     elmat = self._elmat
-    transformwith = Transformer(elmat)
+    transformwith = QTEQTransformer(elmat)
     loc_e, J_e, gradN_e = self._loc_e, self._J_e, self._gradN_e 
     Bm, Bb, Bs, DpsBmb, DtBs = self._Bm, self._Bb, self._Bs, self._DpsBmb, self._DtBs
     Br = fill(0.0, 1, size(elmat, 1))
@@ -535,7 +535,7 @@ function mass(self::FEMMShellT3DSGMT,  assembler::A,  geom0::NodalField{FFlt}, d
     ecoords_e = self._ecoords_e
     e_g, n_e, nvalid, Te = self._e_g, self._n_e, self._nvalid, self._Te
     elmat = self._elmat
-    transformwith = Transformer(elmat)
+    transformwith = QTEQTransformer(elmat)
     loc_e, J_e, gradN_e = self._loc_e, self._J_e, self._gradN_e 
     rho::FFlt = massdensity(self.material); # mass density
     npe = nodesperelem(fes)

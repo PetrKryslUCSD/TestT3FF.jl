@@ -30,8 +30,8 @@ using FinEtoolsDeforLinear
 using FinEtoolsFlexStructures.FESetShellT3Module: FESetShellT3
 using FinEtoolsFlexStructures.FESetShellQ4Module: FESetShellQ4
 using FinEtoolsFlexStructures.FEMMShellT3FFModule
-using FinEtoolsFlexStructures.RotUtilModule: initial_Rfield, linear_update_rotation_field!, update_rotation_field!
-using FinEtoolsFlexStructures.VisUtilModule: plot_nodes, plot_midline, render, plot_space_box, plot_midsurface, space_aspectratio, save_to_json
+using FinEtoolsFlexStructures.RotUtilModule: initial_Rfield, update_rotation_field!
+using VisualStructures: plot_nodes, plot_midline, render, plot_space_box, plot_midsurface, space_aspectratio, save_to_json
 using FinEtools.MeshExportModule.VTKWrite: vtkwrite
 
 function _execute_full(tL_ratio = 1/100, g = 80*0.1^0, analyt_sol=-9.3355e-5, n = 32, visualize = false)
@@ -238,7 +238,7 @@ function test_0_001(orientation = :a, ns = [8, 16, 32, 48, ])
     results = Float64[]
     for n in ns
         # for n in [4, 8, 16, 32, 64, ]
-        r = _execute_half(orientation, tL_ratio, g, analyt_sol, n, true)
+        r = _execute_half(orientation, tL_ratio, g, analyt_sol, n, false)
         push!(results, r/analyt_sol)
     end   
     
