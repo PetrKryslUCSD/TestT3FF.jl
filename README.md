@@ -1,6 +1,6 @@
 # TestT3FF.jl
 
-Illustration of the T3FF general flat-facet shell element capabilities.
+Illustration of the T3FF general flat-facet shell finite element capabilities.
 The paper describing this element has been submitted 12/2021.
 
 ## Instructions for those new to Julia
@@ -45,5 +45,8 @@ Beware: running the above will first clean all the output files from the previou
 
 ## Details
 
+The `runtests.jl` script in the `test` folder shows which examples are executed in the tests.
+These are all files ending in `_examples.jl`. Feel free to browse the source code in these files.
+
 The functionality of the shell finite element is provided by the package
-[`FinEtoolsFlexStructures`](https://github.com/PetrKryslUCSD/FinEtoolsFlexStructures.jl).
+[`FinEtoolsFlexStructures`](https://github.com/PetrKryslUCSD/FinEtoolsFlexStructures.jl). The implementation may be inspected there.
