@@ -13,8 +13,9 @@ folders and a few other details are different on Linux or the Mac.
     `C:\Users\YourUserName\Downloads\TestT3FF.jl-0.3.0`. 
 2. Download `Julia`. Go to [`https://julialang.org/downloads/`](https://julialang.org/downloads/), and choose the portable current stable release. Download to the same folder (`Downloads`).  Extract the zip file (for instance with `7-zip` choose "Extract here"). This will yield `C:\Users\YourUserName\Downloads\julia-1.7.1` (for instance).
 2. Change your working folder to the `C:\Users\YourUserName\Downloads\TestT3FF.jl-0.3.0` folder. 
-3. Start `julia` in a `cmd` window by running the command `..\julia-1.7.1\bin\julia.exe`. 
-4. When you get the Julia prompt, `julia>`, run the following commands (copy and paste into the command window)
+3. Start a `cmd` window. Make sure that the folder displayed in the command window is  `C:\Users\YourUserName\Downloads\TestT3FF.jl-0.3.0`.
+4. Start `julia` in a `cmd` window by running the command `..\julia-1.7.1\bin\julia.exe`. 
+5. When you get the Julia prompt, `julia>`, run the following commands (copy and paste into the command window)
 ```
 include("top.jl")
 using Pkg; Pkg.test(); 
