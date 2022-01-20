@@ -1,7 +1,7 @@
 name = "TestT3FF"
 uuid = "5837e7f9-23d3-412d-84ee-a8ad88e088f6"
 authors = ["Petr Krysl <pkrysl@ucsd.edu>"]
-version = "0.3.0"
+version = "0.3.1"
 
 [deps]
 Arpack = "7d9fca2a-8960-54d3-9f78-7d1dccf2cb97"
