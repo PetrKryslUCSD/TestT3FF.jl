@@ -331,7 +331,7 @@ q3 = 0.3005
 q1 = 0.3018
 q2 = 0.301976
 q3 = 0.302021
-@show qtrue = (q2^2 - q1 * q3) / (2 * q2 - q1 - q3) # 0.02036
+@show qtrue = (q2^2 - q1 * q3) / (2 * q2 - q1 - q3) # 0.302036
 
 # T3FF, mesh with 128, 256, 512 elements per side
 # julia> ns, results = scordelis_lo_examples.test_convergence([16, 32, 64].*8)

@@ -107,6 +107,10 @@ mypush!([0.329038, 0.317741, 0.314225] ./ (0.3024) .* 100)
 # mypush!([.284311, .293325, .305336] ./ (0.3024) .* 100)
 mypush!([.316522, .303931, .301618] ./ (0.3024) .* 100)
 
+mypush!(-0.23851E+00, -2.994369E-01, -3.021210E-01] ./ (-0.3024) .* 100)
+
+# The extrapolated value with Richardson formula is 0.3022447
+
 differences = []
 for r in results
     @show r[1]
