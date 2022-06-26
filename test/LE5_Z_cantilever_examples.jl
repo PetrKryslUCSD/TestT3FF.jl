@@ -170,7 +170,7 @@ function test_convergence()
     formul = FEMMShellT3FFModule
     @info "LE5 Z-cantilever, formulation=$(formul)"
     pointAstressX = Float64[]
-    for n in [0, 1, 2, 3, 4, ]
+    for n in [0, 1, 2, 3, 4, 5, 6, 7]
         s = _execute_dsg_model(formul, "nle5xf3c.inp", n, false)
         push!(pointAstressX, s[1])
     end
@@ -185,8 +185,8 @@ using .LE5_Z_cantilever_examples
 m = LE5_Z_cantilever_examples
 
 let
-    pointAstressX = m.test_convergence()
-    ns = 2 .^  [0, 1, 2, 3, 4, ]
+    @show pointAstressX = m.test_convergence()
+    ns = 2 .^  [0, 1, 2, 3, 4, 5, 6, 7]
 
     objects = []
 
