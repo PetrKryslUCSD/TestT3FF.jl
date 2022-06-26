@@ -28,9 +28,9 @@ using VisualStructures: plot_nodes, plot_midline, render, plot_space_box, plot_m
 using FinEtools.MeshExportModule.VTKWrite: vtkwrite
 
 # Parameters:
-E = 2.0e5
+E = 2.0e11
 nu = 1/3;
-pressure = 1.0;
+pressure = 1.0e6;
 Length = 2.0;
 
 # The hyperboloid axis is parallel to Y
@@ -165,7 +165,7 @@ end
 function test_convergence(formul, thicknessmult = 1/100, distortion = 0.0)
     @info "Pressurized Hyperbolic shell, free ends, formulation=$(formul)"
     results = []
-    ns = [16, 32, 64, 128, 256]
+    ns = [16, 32, 64,]
     for n in ns
         push!(results, _execute(formul, n, Length/2*thicknessmult, false, 2*distortion/n))
     end
@@ -186,6 +186,14 @@ let
         ns, results10000 = cos_2t_press_hyperboloid_free_examples.test_convergence(FEMMShellT3FFModule, 1/10000, distortion)
         ns, results100000 = cos_2t_press_hyperboloid_free_examples.test_convergence(FEMMShellT3FFModule, 1/100000, distortion)
 
+        @show q1, q2, q3 = results100
+        @show qtrue = (q2^2 - q1 * q3) / (2*q2 - q1 - q3)
+        @show q1, q2, q3 = results1000
+        @show qtrue = (q2^2 - q1 * q3) / (2*q2 - q1 - q3)
+        @show q1, q2, q3 = results10000
+        @show qtrue = (q2^2 - q1 * q3) / (2*q2 - q1 - q3)
+        @show q1, q2, q3 = results100000
+        @show qtrue = (q2^2 - q1 * q3) / (2*q2 - q1 - q3)
 
         errors100 = diff(results100)/results100[end]
         errors1000 = diff(results1000)/results1000[end]
