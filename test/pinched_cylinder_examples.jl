@@ -4,6 +4,8 @@ Pinched cylinder with diagphram supports and concentrated force
 module pinched_cylinder_examples
 
 using FinEtools
+using FinEtools.FTypesModule: FInt, FFlt, FFltMat, FFltVec
+using FinEtools.AlgoBaseModule: solve_blocked!
 using FinEtoolsDeforLinear
 using FinEtoolsFlexStructures.FESetShellT3Module: FESetShellT3
 using FinEtoolsFlexStructures.FEMMShellT3FFModule

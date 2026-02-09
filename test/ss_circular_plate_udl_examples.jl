@@ -4,6 +4,8 @@ Simply-supported circular plate with uniform distributed load
 module ss_circular_plate_udl_examples
 
 using FinEtools
+using FinEtools.FTypesModule: FInt, FFlt, FFltMat, FFltVec
+using FinEtools.AlgoBaseModule: solve_blocked!
 using FinEtoolsDeforLinear
 using FinEtoolsFlexStructures.FESetShellT3Module: FESetShellT3
 using FinEtoolsFlexStructures.FEMMShellT3FFModule
@@ -99,7 +101,7 @@ function _execute(mesh_procedure = :q4_t3, n = 2, t_radius_ratio = 0.01, visuali
     if !visualize
         return true
     end
-    scattersysvec!(dchi, (a/4)/maximum(abs.(U)).*U)
+    scattersysvec!(dchi, (a/4)/maximum(abs.(U)).*U, DOF_KIND_ALL)
     update_rotation_field!(Rfield0, dchi)
     plots = cat(plot_space_box([[0 0 -a/2]; [a a a/2]]),
         #plot_nodes(fens),

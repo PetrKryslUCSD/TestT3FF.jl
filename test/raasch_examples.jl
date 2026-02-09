@@ -20,12 +20,13 @@ module raasch_examples
 
 using LinearAlgebra, Statistics
 using FinEtools
+using FinEtools.FTypesModule: FInt, FFlt, FFltMat, FFltVec
+using FinEtools.AlgoBaseModule: solve_blocked!
 using FinEtoolsDeforLinear
 using FinEtoolsFlexStructures.FESetShellT3Module: FESetShellT3
-using FinEtoolsFlexStructures.FESetShellQ4Module: FESetShellQ4
 using FinEtoolsFlexStructures.FEMMShellT3FFModule
 using FinEtoolsFlexStructures.FEMMShellT3FFModule: num_normals
-using TestT3FF.FEMMShellT3DSGMTModule
+# using TestT3FF.FEMMShellT3DSGMTModule
 using FinEtoolsFlexStructures.RotUtilModule: initial_Rfield, update_rotation_field!
 using VisualStructures: plot_nodes, plot_midline, render, plot_space_box, plot_midsurface, space_aspectratio, save_to_json
 

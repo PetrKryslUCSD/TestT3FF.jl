@@ -18,10 +18,11 @@ module cos_2t_press_hyperboloid_fixed_examples
 
 using LinearAlgebra
 using FinEtools
+using FinEtools.FTypesModule: FInt, FFlt, FFltMat, FFltVec
+using FinEtools.AlgoBaseModule: solve_blocked!
 using FinEtools.MeshModificationModule: distortblock
 using FinEtoolsDeforLinear
 using FinEtoolsFlexStructures.FESetShellT3Module: FESetShellT3
-using FinEtoolsFlexStructures.FESetShellQ4Module: FESetShellQ4
 using FinEtoolsFlexStructures.FEMMShellT3FFModule
 using FinEtoolsFlexStructures.RotUtilModule: initial_Rfield, update_rotation_field!
 using VisualStructures: plot_nodes, plot_midline, render, plot_space_box, plot_midsurface, space_aspectratio, save_to_json
@@ -35,7 +36,7 @@ Length = 2.0;
 
 # The hyperboloid axis is parallel to Y
 
-function hyperbolic!(csmatout::FFltMat, XYZ::FFltMat, tangents::FFltMat, fe_label::FInt) 
+function hyperbolic!(csmatout::FFltMat, XYZ::FFltMat, tangents::FFltMat, feid, qpid) 
     n = cross(tangents[:, 1], tangents[:, 2]) 
     n = n/norm(n)
     # r = vec(XYZ); r[2] = 0.0
@@ -45,7 +46,7 @@ function hyperbolic!(csmatout::FFltMat, XYZ::FFltMat, tangents::FFltMat, fe_labe
     return csmatout
 end
 
-function computetrac!(forceout::FFltVec, XYZ::FFltMat, tangents::FFltMat, fe_label::FInt)
+function computetrac!(forceout::FFltVec, XYZ::FFltMat, tangents::FFltMat, feid, qpid)
     r = vec(XYZ); r[2] = 0.0
     r .= vec(r)/norm(vec(r))
     theta = atan(r[3], r[1])
@@ -148,16 +149,16 @@ function _execute(formul, n = 8, thickness = Length/2/100, visualize = false, di
     vtkwrite("cos_2t_press_hyperboloid_fixed-$(n)-$(thickness)-$(distortion)-q.vtu", fens, fes; scalars = scalars, vectors = [("u", dchi.values[:, 1:3])])
 
     # Visualization
-    if visualize
-        scattersysvec!(dchi, (Length/8)/maximum(abs.(U)).*U)
-        update_rotation_field!(Rfield0, dchi)
-        plots = cat(plot_space_box([[0 0 -Length/2]; [Length/2 Length/2 Length/2]]),
-            #plot_nodes(fens),
-            plot_midsurface(fens, fes; x = geom0.values, facecolor = "rgb(12, 12, 123)"),
-            plot_midsurface(fens, fes; x = geom0.values, u = dchi.values[:, 1:3], R = Rfield0.values);
-            dims = 1)
-        pl = render(plots)
-    end
+    # if visualize
+    #     scattersysvec!(dchi, (Length/8)/maximum(abs.(U)).*U)
+    #     update_rotation_field!(Rfield0, dchi)
+    #     plots = cat(plot_space_box([[0 0 -Length/2]; [Length/2 Length/2 Length/2]]),
+    #         #plot_nodes(fens),
+    #         plot_midsurface(fens, fes; x = geom0.values, facecolor = "rgb(12, 12, 123)"),
+    #         plot_midsurface(fens, fes; x = geom0.values, u = dchi.values[:, 1:3], R = Rfield0.values);
+    #         dims = 1)
+    #     pl = render(plots)
+    # end
 
     return strainenergy
 end

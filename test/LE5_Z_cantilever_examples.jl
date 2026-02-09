@@ -22,7 +22,7 @@ module LE5_Z_cantilever_examples
 
 using LinearAlgebra
 using FinEtools
-using FinEtools.FTypesModule: FInt, FFlt, FtheFltMat, FFltVec
+using FinEtools.FTypesModule: FInt, FFlt, FFltMat, FFltVec
 using FinEtools.AlgoBaseModule: solve_blocked!
 using FinEtoolsDeforLinear
 using FinEtoolsFlexStructures.FESetShellT3Module: FESetShellT3
