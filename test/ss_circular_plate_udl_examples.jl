@@ -90,8 +90,8 @@ function _execute(mesh_procedure = :q4_t3, n = 2, t_radius_ratio = 0.01, visuali
 
     # @infiltrate
     # Solve
-    U = K\F
-    scattersysvec!(dchi, U[:])
+    solve_blocked!(dchi, K, F)
+    U = gathersysvec(dchi, DOF_KIND_ALL)
     targetu =  dchi.values[nl, 3][1]
     @info "Target: $(round(targetu, digits=8)),  $(round(targetu/analyt_sol, digits = 4)*100)%"
 

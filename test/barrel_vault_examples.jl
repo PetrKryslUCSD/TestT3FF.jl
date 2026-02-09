@@ -20,9 +20,10 @@ module barrel_vault_examples
 
 using LinearAlgebra
 using FinEtools
+using FinEtools.FTypesModule: FInt, FFlt, FFltMat, FFltVec
+using FinEtools.AlgoBaseModule: solve_blocked!
 using FinEtoolsDeforLinear
 using FinEtoolsFlexStructures.FESetShellT3Module: FESetShellT3
-using FinEtoolsFlexStructures.FESetShellQ4Module: FESetShellQ4
 using FinEtoolsFlexStructures.FEMMShellT3FFModule
 using FinEtoolsFlexStructures.RotUtilModule: initial_Rfield, update_rotation_field!
 using VisualStructures: plot_nodes, plot_midline, render, plot_space_box, plot_midsurface, space_aspectratio, save_to_json
@@ -113,14 +114,14 @@ function _execute(input = "barrelvault_s3r_fineirreg.inp", visualize = false)
     
     # @infiltrate
     # Solve
-    U = K\F
-    scattersysvec!(dchi, U[:])
+    solve_blocked!(dchi, K, F)
+    U = gathersysvec(dchi, DOF_KIND_ALL)
 
     targetu =  dchi.values[nl, 1][1]
     @info "Solution: $(round(targetu, digits=8)),  $(round(targetu/analyt_sol, digits = 4)*100)%"
 
     # Generate a graphical display of resultants
-    cylindrical!(csmatout::FFltMat, XYZ::FFltMat, tangents::FFltMat, fe_label::FInt) = begin
+    cylindrical!(csmatout::FFltMat, XYZ::FFltMat, tangents::FFltMat, fe_label::FInt, qpid::FInt) = begin
         r = -vec(XYZ); r[3] = 0.0
         csmatout[:, 3] .= vec(r)/norm(vec(r))
         csmatout[:, 2] .= (0.0, 0.0, 1.0)
@@ -151,16 +152,16 @@ function _execute(input = "barrelvault_s3r_fineirreg.inp", visualize = false)
     vtkwrite("$(input)-q.vtu", fens, fes; scalars = scalars, vectors = [("u", dchi.values[:, 1:3])])
 
     # Visualization
-    if !visualize
-        return true
-    end
-    scattersysvec!(dchi, (R/2)/maximum(abs.(U)).*U)
-    update_rotation_field!(Rfield0, dchi)
-    plots = cat(plot_space_box([[0 0 -R]; [R R R]]),
-        plot_nodes(fens),
-        plot_midsurface(fens, fes; x = geom0.values, u = dchi.values[:, 1:3], R = Rfield0.values);
-    dims = 1)
-    pl = render(plots)
+    # if !visualize
+    #     return true
+    # end
+    # scattersysvec!(dchi, (R/2)/maximum(abs.(U)).*U)
+    # update_rotation_field!(Rfield0, dchi)
+    # plots = cat(plot_space_box([[0 0 -R]; [R R R]]),
+    #     plot_nodes(fens),
+    #     plot_midsurface(fens, fes; x = geom0.values, u = dchi.values[:, 1:3], R = Rfield0.values);
+    # dims = 1)
+    # pl = render(plots)
     return true
 end
 

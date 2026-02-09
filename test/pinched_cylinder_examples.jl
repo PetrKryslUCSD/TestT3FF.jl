@@ -88,8 +88,8 @@ function _execute(n = 2, visualize = true)
     F = distribloads(lfemm, geom0, dchi, fi, 3);
 
     # Solve
-    U = K\F
-    scattersysvec!(dchi, U[:])
+    solve_blocked!(dchi, K, F)
+    U = gathersysvec(dchi, DOF_KIND_ALL)
     @show n,  dchi.values[nlc, 3][1]/analyt_sol*100
 
     # Visualization

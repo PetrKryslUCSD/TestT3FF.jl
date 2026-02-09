@@ -33,9 +33,10 @@ module hemisphere_open_examples
 
 using LinearAlgebra
 using FinEtools
+using FinEtools.FTypesModule: FInt, FFlt, FFltMat, FFltVec
+using FinEtools.AlgoBaseModule: solve_blocked!
 using FinEtoolsDeforLinear
 using FinEtoolsFlexStructures.FESetShellT3Module: FESetShellT3
-using FinEtoolsFlexStructures.FESetShellQ4Module: FESetShellQ4
 using FinEtoolsFlexStructures.FEMMShellT3FFModule
 using FinEtoolsFlexStructures.RotUtilModule: initial_Rfield, update_rotation_field!
 using VisualStructures: plot_nodes, plot_midline, render, plot_space_box, plot_midsurface, space_aspectratio, save_to_json
@@ -43,7 +44,7 @@ using FinEtools.MeshExportModule.VTKWrite: vtkwrite
 
 using Infiltrator
 
-function spherical!(csmatout::FFltMat, XYZ::FFltMat, tangents::FFltMat, fe_label::FInt)  
+function spherical!(csmatout::FFltMat, XYZ::FFltMat, tangents::FFltMat, fe_label::FInt, qpid::FInt)  
     r = vec(XYZ); 
     csmatout[:, 3] .= vec(r)/norm(vec(r))
     csmatout[:, 2] .= (0.0, 0.0, 1.0)
@@ -135,8 +136,8 @@ function _execute(n = 8, visualize = true, exact_normals = false, drilling_stiff
 
     # @infiltrate
     # Solve
-    U = K\F
-    scattersysvec!(dchi, U[:])
+    solve_blocked!(dchi, K, F)
+    U = gathersysvec(dchi, DOF_KIND_ALL)
     resultpercent =  dchi.values[nl, 1][1]*100
     @info "Solution: $(round(resultpercent/analyt_sol, digits = 4))%"
 
@@ -169,13 +170,13 @@ function _execute(n = 8, visualize = true, exact_normals = false, drilling_stiff
 
         vtkwrite("hemisphere_open-$n-normals.vtu", fens, fes; vectors = [("normals", femm._normals[:, 1:3])])
 
-        scattersysvec!(dchi, (R/4)/maximum(abs.(U)).*U)
-        update_rotation_field!(Rfield0, dchi)
-        plots = cat(plot_space_box([[0 0 -R]; [R R R]]),
-        #plot_nodes(fens),
-            plot_midsurface(fens, fes; x = geom0.values, u = dchi.values[:, 1:3], R = Rfield0.values);
-            dims = 1)
-        pl = render(plots)
+        # scattersysvec!(dchi, (R/4)/maximum(abs.(U)).*U)
+        # update_rotation_field!(Rfield0, dchi)
+        # plots = cat(plot_space_box([[0 0 -R]; [R R R]]),
+        # #plot_nodes(fens),
+        #     plot_midsurface(fens, fes; x = geom0.values, u = dchi.values[:, 1:3], R = Rfield0.values);
+        #     dims = 1)
+        # pl = render(plots)
     end
     return resultpercent/analyt_sol
 end

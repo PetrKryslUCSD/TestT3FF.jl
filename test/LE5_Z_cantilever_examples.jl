@@ -15,20 +15,23 @@ Objective of the analysis is to compute the axial stress at X = 2.5 from fixed e
 NAFEMS REFERENCE SOLUTION
 
 Axial stress at X = 2.5 from fixed end (point A) at the midsurface is -108 MPa.
+
+A better solution is now available (https://link.springer.com/article/10.1007/s11831-022-09798-5): -111.215 MPa.
 """
 module LE5_Z_cantilever_examples
 
 using LinearAlgebra
 using FinEtools
+using FinEtools.FTypesModule: FInt, FFlt, FtheFltMat, FFltVec
+using FinEtools.AlgoBaseModule: solve_blocked!
 using FinEtoolsDeforLinear
 using FinEtoolsFlexStructures.FESetShellT3Module: FESetShellT3
-using FinEtoolsFlexStructures.FESetShellQ4Module: FESetShellQ4
 using FinEtoolsFlexStructures.FEMMShellT3FFModule
 using FinEtoolsFlexStructures.RotUtilModule: initial_Rfield, update_rotation_field!
 using VisualStructures: plot_nodes, plot_midline, render, plot_space_box, plot_midsurface, space_aspectratio, save_to_json
 using FinEtools.MeshExportModule.VTKWrite: vtkwrite
 
-function zcant!(csmatout::FFltMat, XYZ::FFltMat, tangents::FFltMat, fe_label::FInt)  
+function zcant!(csmatout::FFltMat, XYZ::FFltMat, tangents::FFltMat, fe_label::FInt, qpid::FInt)  
     r = vec(XYZ); 
     cross3!(r, view(tangents, :, 1), view(tangents, :, 2))
     csmatout[:, 3] .= vec(r)/norm(vec(r))
@@ -92,7 +95,7 @@ function _execute_dsg_model(formul, input = "nle5xf3c.inp", nrefs = 0, visualize
     
     applyebc!(dchi)
     numberdofs!(dchi);
-    @show dchi.nfreedofs
+    @info "Number of free DOFs: $(nfreedofs(dchi))"
 
     # Assemble the system matrix
     associategeometry!(femm, geom0)
@@ -111,8 +114,8 @@ function _execute_dsg_model(formul, input = "nle5xf3c.inp", nrefs = 0, visualize
 
     # @infiltrate
     # Solve
-    U = K\F
-    scattersysvec!(dchi, U[:])
+    solve_blocked!(dchi, K, F)
+    U = gathersysvec(dchi, DOF_KIND_ALL)
     targetu =  minimum(dchi.values[:, 3]), maximum(dchi.values[:, 3])
     @info "Target: $(round.(targetu, digits=8))"
 
@@ -197,7 +200,7 @@ let
     style = "solid",
     mark = "diamond"
     },
-    Coordinates([v for v in  zip(ns, (-108 .- pointAstressX ./ 1.0e6) ./ 108)])
+    Coordinates([v for v in  zip(ns, (-111.215 .- pointAstressX ./ 1.0e6) ./ 111.215)])
     )
     push!(objects, p)
 

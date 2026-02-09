@@ -3,6 +3,7 @@ module FEMMShellT3DSGMTModule
 using LinearAlgebra: norm, Transpose, mul!, diag, eigen, I, dot
 using Statistics: mean
 using FinEtools
+using FinEtools.FTypesModule: FInt, FFlt, FFltMat
 import FinEtools.FESetModule: gradN!, nodesperelem, manifdim
 using FinEtools.IntegDomainModule: IntegDomain, integrationdata, Jacobianvolume
 import FinEtools.FEMMBaseModule: associategeometry!

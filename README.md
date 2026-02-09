@@ -50,3 +50,7 @@ These are all files ending in `_examples.jl`. Feel free to browse the source cod
 
 The functionality of the shell finite element is provided by the package
 [`FinEtoolsFlexStructures`](https://github.com/PetrKryslUCSD/FinEtoolsFlexStructures.jl). The implementation may be inspected there.
+
+## Updates
+
+- 02/08/2026: Updated for FinEtoolsFlexStructures 3.2.1.

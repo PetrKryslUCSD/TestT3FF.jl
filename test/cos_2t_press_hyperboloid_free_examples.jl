@@ -18,10 +18,11 @@ module cos_2t_press_hyperboloid_free_examples
 
 using LinearAlgebra
 using FinEtools
+using FinEtools.FTypesModule: FInt, FFlt, FFltMat, FFltVec
+using FinEtools.AlgoBaseModule: solve_blocked!
 using FinEtools.MeshModificationModule: distortblock
 using FinEtoolsDeforLinear
 using FinEtoolsFlexStructures.FESetShellT3Module: FESetShellT3
-using FinEtoolsFlexStructures.FESetShellQ4Module: FESetShellQ4
 using FinEtoolsFlexStructures.FEMMShellT3FFModule
 using FinEtoolsFlexStructures.RotUtilModule: initial_Rfield, update_rotation_field!
 using VisualStructures: plot_nodes, plot_midline, render, plot_space_box, plot_midsurface, space_aspectratio, save_to_json
@@ -35,7 +36,7 @@ Length = 2.0;
 
 # The hyperboloid axis is parallel to Y
 
-function hyperbolic!(csmatout::FFltMat, XYZ::FFltMat, tangents::FFltMat, fe_label::FInt) 
+function hyperbolic!(csmatout::FFltMat, XYZ::FFltMat, tangents::FFltMat, fe_label::FInt, qpid::FInt) 
     n = cross(tangents[:, 1], tangents[:, 2]) 
     n = n/norm(n)
     # r = vec(XYZ); r[2] = 0.0
@@ -45,7 +46,7 @@ function hyperbolic!(csmatout::FFltMat, XYZ::FFltMat, tangents::FFltMat, fe_labe
     return csmatout
 end
 
-function computetrac!(forceout::FFltVec, XYZ::FFltMat, tangents::FFltMat, fe_label::FInt)
+function computetrac!(forceout::FFltVec, XYZ::FFltMat, tangents::FFltMat, fe_label::FInt, qpid::FInt)
     r = vec(XYZ); r[2] = 0.0
     r .= vec(r)/norm(vec(r))
     theta = atan(r[3], r[1])
@@ -118,8 +119,8 @@ function _execute(formul, n = 8, thickness = Length/2/100, visualize = false, di
     F = distribloads(lfemm, geom0, dchi, fi, 2);
     
     # Solve
-    U = K\F
-    scattersysvec!(dchi, U[:])
+    solve_blocked!(dchi, K, F)
+    U = gathersysvec(dchi, DOF_KIND_ALL)
     strainenergy = 1/2 * U' * K * U
     @info "Strain Energy: $(round(strainenergy, digits = 9))"
 

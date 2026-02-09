@@ -20,6 +20,8 @@ module vis_scordelis_lo_examples
 
 using LinearAlgebra
 using FinEtools
+using FinEtools.FTypesModule: FInt, FFlt, FFltMat, FFltVec
+using FinEtools.AlgoBaseModule: solve_blocked!
 using FinEtoolsDeforLinear
 using FinEtoolsFlexStructures.FESetShellT3Module: FESetShellT3
 using FinEtoolsFlexStructures.FESetShellQ4Module: FESetShellQ4
@@ -38,7 +40,7 @@ thickness = 0.25; # geometrical dimensions are in feet
 R = 25.0;
 L = 50.0;
 
-cylindrical!(csmatout::FFltMat, XYZ::FFltMat, tangents::FFltMat, fe_label::FInt) = begin
+cylindrical!(csmatout::FFltMat, XYZ::FFltMat, tangents::FFltMat, fe_label::FInt, qpid::FInt) = begin
     r = vec(XYZ); r[2] = 0.0; r[3] += R
     csmatout[:, 3] .= vec(r)/norm(vec(r))
     csmatout[:, 2] .= (0.0, 1.0, 0.0) #  this is along the axis
@@ -112,8 +114,8 @@ function _execute_dsg_model(n = 8, visualize = true)
     F = distribloads(lfemm, geom0, dchi, fi, 3);
     
     # Solve
-    U = K\F
-    scattersysvec!(dchi, U[:])
+    solve_blocked!(dchi, K, F)
+    U = gathersysvec(dchi, DOF_KIND_ALL)
     result =   dchi.values[nl, 3][1]
     @info "Solution: $(result), $(round(result/analyt_sol*100, digits = 4))%"
 
@@ -148,14 +150,14 @@ function _execute_dsg_model(n = 8, visualize = true)
 
         # vtkwrite("vis_scordelis_lo-$(femm.transv_shear_formulation)-$(n)-uur.vtu", fens, fes; scalars = scalars, vectors = [("u", dchi.values[:, 1:3]), ("ur", dchi.values[:, 4:6])])
 
-        scattersysvec!(dchi, (L/8)/maximum(abs.(U)).*U)
-        update_rotation_field!(Rfield0, dchi)
-        plots = cat(plot_space_box([[0 0 -L/2]; [L/2 L/2 L/2]]),
-            #plot_nodes(fens),
-            plot_midsurface(fens, fes; x = geom0.values, facecolor = "rgb(12, 12, 123)"),
-            plot_midsurface(fens, fes; x = geom0.values, u = dchi.values[:, 1:3], R = Rfield0.values);
-            dims = 1)
-        pl = render(plots)
+        # scattersysvec!(dchi, (L/8)/maximum(abs.(U)).*U)
+        # update_rotation_field!(Rfield0, dchi)
+        # plots = cat(plot_space_box([[0 0 -L/2]; [L/2 L/2 L/2]]),
+        #     #plot_nodes(fens),
+        #     plot_midsurface(fens, fes; x = geom0.values, facecolor = "rgb(12, 12, 123)"),
+        #     plot_midsurface(fens, fes; x = geom0.values, u = dchi.values[:, 1:3], R = Rfield0.values);
+        #     dims = 1)
+        # pl = render(plots)
     end
 
     result

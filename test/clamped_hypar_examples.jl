@@ -101,8 +101,8 @@ function _execute_full(tL_ratio = 1/100, g = 80*0.1^0, analyt_sol=-9.3355e-5, n 
     F = distribloads(lfemm, geom0, dchi, fi, 3);
     
     # Solve
-    U = K\F
-    scattersysvec!(dchi, U[:])
+    solve_blocked!(dchi, K, F)
+    U = gathersysvec(dchi, DOF_KIND_ALL)
     targetu = dchi.values[nl, 3][1]
     @info "Solution: $(round(targetu/analyt_sol, digits = 4)*100)%"
 
@@ -184,8 +184,8 @@ function _execute_half(orientation = :a, tL_ratio = 1/100, g = 80*0.1^0, analyt_
     F = distribloads(lfemm, geom0, dchi, fi, 3);
     
     # Solve
-    U = K\F
-    scattersysvec!(dchi, U[:])
+    solve_blocked!(dchi, K, F)
+    U = gathersysvec(dchi, DOF_KIND_ALL)
     targetu = dchi.values[nl, 3][1]
     @info "Solution: $(round(targetu/analyt_sol, digits = 4)*100)%"
 

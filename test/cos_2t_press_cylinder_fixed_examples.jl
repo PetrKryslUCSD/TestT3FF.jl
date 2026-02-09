@@ -18,6 +18,8 @@ module cos_2t_press_cylinder_fixed_examples
 
 using LinearAlgebra
 using FinEtools
+using FinEtools.FTypesModule: FInt, FFlt, FFltMat, FFltVec
+using FinEtools.AlgoBaseModule: solve_blocked!
 using FinEtools.MeshModificationModule: distortblock
 using FinEtoolsDeforLinear
 using FinEtoolsFlexStructures.FESetShellT3Module: FESetShellT3
@@ -36,7 +38,7 @@ L = 2.0;
 
 # The cylinder axis is parallel to Y
 
-function cylindrical!(csmatout::FFltMat, XYZ::FFltMat, tangents::FFltMat, fe_label::FInt) 
+function cylindrical!(csmatout::FFltMat, XYZ::FFltMat, tangents::FFltMat, fe_label::FInt, qpid::FInt) 
     n = cross(tangents[:, 1], tangents[:, 2]) 
     n = n/norm(n)
     # r = vec(XYZ); r[2] = 0.0
@@ -46,7 +48,7 @@ function cylindrical!(csmatout::FFltMat, XYZ::FFltMat, tangents::FFltMat, fe_lab
     return csmatout
 end
 
-function computetrac!(forceout::FFltVec, XYZ::FFltMat, tangents::FFltMat, fe_label::FInt)
+function computetrac!(forceout::FFltVec, XYZ::FFltMat, tangents::FFltMat, fe_label::FInt, qpid::FInt)
     r = vec(XYZ); r[2] = 0.0
     r .= vec(r)/norm(vec(r))
     theta = atan(r[3], r[1])
@@ -116,8 +118,8 @@ function _execute(formul, n = 8, thickness = R/100, visualize = false, distortio
     F = distribloads(lfemm, geom0, dchi, fi, 2);
     
     # Solve
-    U = K\F
-    scattersysvec!(dchi, U[:])
+    solve_blocked!(dchi, K, F)
+    U = gathersysvec(dchi, DOF_KIND_ALL)
     strainenergy = 1/2 * U' * K * U
     @info "Strain Energy: $(round(strainenergy, digits = 9))"
 
