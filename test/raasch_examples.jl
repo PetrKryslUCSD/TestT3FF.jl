@@ -42,9 +42,7 @@ function _execute(input = "raasch_s4_1x9.inp", drilling_stiffness_scale = 1.0, v
     # bench_sol = 4.82482; # Ko et al, Performance ...
     R = 46.0;
     formul = FEMMShellT3FFModule
-    # formul = FEMMShellT3DSGMTModule
-    @show formul
-
+    
     if input == ""
         fens, fes = T3block(210.0, 20.0, nL, nW)
         fens.xyz = xyz3(fens)
@@ -114,7 +112,7 @@ function _execute(input = "raasch_s4_1x9.inp", drilling_stiffness_scale = 1.0, v
 
     # Assemble the system matrix
     associategeometry!(femm, geom0)
-    @show num_normals(femm)
+    # @show num_normals(femm)
     K = stiffness(femm, geom0, u0, Rfield0, dchi);
 
     # Load
@@ -152,8 +150,12 @@ function test_convergence()
 
     # for m in ["1x9", "3x18", "5x36", "10x72", "20x144"]
         # _execute("raasch_s4_" * m * ".inp", 1.0, false)
-    for n in 1:7
-        _execute("", 1.0, false, 9*2^(n-1), 1*2^(n-1))
+    # for n in 1:7
+    #     _execute("", 1.0, false, 9*2^(n-1), 1*2^(n-1))
+    # end
+    for n in [2, 4, 8, 16, 32]
+        # _execute("", 1.0, false, 9*2^(n-1), 1*2^(n-1))
+        _execute("", 1.0, false, 6*n, n)
     end
     return true
 end

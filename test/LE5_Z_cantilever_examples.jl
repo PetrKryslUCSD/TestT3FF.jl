@@ -40,6 +40,7 @@ function zcant!(csmatout::FFltMat, XYZ::FFltMat, tangents::FFltMat, fe_label::FI
     return csmatout
 end
 
+const refPointAstressX = -111.215
 
 function _execute_dsg_model(formul, input = "nle5xf3c.inp", nrefs = 0, visualize = true)
     E = 210e9;
@@ -117,7 +118,7 @@ function _execute_dsg_model(formul, input = "nle5xf3c.inp", nrefs = 0, visualize
     solve_blocked!(dchi, K, F)
     U = gathersysvec(dchi, DOF_KIND_ALL)
     targetu =  minimum(dchi.values[:, 3]), maximum(dchi.values[:, 3])
-    @info "Target: $(round.(targetu, digits=8))"
+    
 
     # Generate a graphical display of displacements and rotations
     scalars = []
@@ -155,6 +156,9 @@ function _execute_dsg_model(formul, input = "nle5xf3c.inp", nrefs = 0, visualize
         push!(scalars, ("q$nc", fld.values))
     end
     vtkwrite("z_cant-$input-$nrefs-q.vtu", fens, fes; scalars = scalars, vectors = [("u", dchi.values[:, 1:3])])
+
+    
+    @info "nrefs = $nrefs: $(round(pointAstresses[1]/1e6, digits=6)) MPa, err $(round(100 - pointAstresses[1]/1e6/refPointAstressX*100, digits = 4))%"
 
     # Visualization
     if visualize
